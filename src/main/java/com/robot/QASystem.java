@@ -6,38 +6,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.log4j.Logger;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 //http://poi.apache.org/apidocs/org/apache/poi/ss/usermodel/Row.html
 
-//poi-ooxml-3.9.jar
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.robot.Repertoire.AnsQuintuple;
-import com.robot.QACouplet.Origin;
 import com.robot.Sentence.Protagonist;
-import com.robot.semantic.SyntaxCoach;
-import com.robot.semantic.RNN.RNNParaphrase;
 import com.robot.DateBase.MySQL;
-import com.robot.syntax.CWSTagger;
-import com.robot.InformationExtraction.DialogueDialysis;
+import com.robot.semantic.SyntaxCoach;
 import com.util.Utility;
-import com.util.Utility.PriorityQueue;
-import com.util.Utility.Timer;
 import com.util.Utility.Couplet;
-import com.util.Utility.DataSource.Invoker;
-import com.util.Utility.DataSource.Query;
+import com.util.Utility.Timer;
 
 public class QASystem {
 	public static Logger log = Logger.getLogger(QASystem.class);
