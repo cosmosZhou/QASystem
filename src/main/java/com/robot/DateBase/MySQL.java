@@ -2,29 +2,24 @@ package com.robot.DateBase;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 
-import com.robot.QACouplet;
-import com.robot.Sentence;
-import com.robot.QACouplet.Origin;
-import com.robot.Sentence.Protagonist;
-import com.robot.util.PropertyConfig;
 import com.robot.FAQ;
+import com.robot.QACouplet;
+import com.robot.QACouplet.Origin;
+import com.robot.util.PropertyConfig;
+import com.util.DataSource.Driver;
 import com.util.Utility;
 import com.util.Utility.Couplet;
 import com.util.Utility.DataSource;
-import com.util.Utility.DataSource.Query;
 
 public class MySQL extends DataSource {
 	private static Logger log = Logger.getLogger(MySQL.class);
@@ -32,9 +27,27 @@ public class MySQL extends DataSource {
 	static public MySQL instance;
 
 	static {
-		instance = static_construct();
-	}
+		synchronized (MySQL.class) {
+//		String url = "jdbc:mysql://192.168.2.39:3306/corpus?";
+			String url = "jdbc:mysql://localhost:3306/ucc?";
+			String user = "root";		
 
+			if (SystemUtils.IS_OS_WINDOWS) {
+				String serverTimezone = "UTC";
+				String password = "123456";
+//			String serverTimezone = "GMT";
+				instance = static_construct(url, user, password, serverTimezone);
+			} else {
+				String password = "";
+				instance = static_construct(url, user, password);
+			}
+		}
+	}
+	
+	static MySQL static_construct(String url, String user, String password, String serverTimezone) {
+		return new MySQL(url, user, password, serverTimezone);
+	}
+	
 	static MySQL static_construct(String url, String user, String password) {
 		// instance = new MySQL(PropertyConfig.getProperty("url",
 		// "jdbc:mysql://121.40.196.48:3306/ucc?"),
@@ -49,6 +62,10 @@ public class MySQL extends DataSource {
 
 	public MySQL(String url, String user, String password) {
 		super(url, user, password);
+	}
+
+	public MySQL(String url, String user, String password, String serverTimezone) {
+		super(url, user, password, Driver.mysql, serverTimezone);
 	}
 
 	// of format : dddd-dd-dd

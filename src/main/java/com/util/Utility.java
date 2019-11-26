@@ -11,6 +11,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -77,9 +78,15 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jblas.DoubleMatrix;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.util.DataSource.Driver;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+
+import oracle.jdbc.pool.OracleDataSource;
 
 public class Utility {
 	public static void main(String[] args) throws Exception {
@@ -221,6 +228,33 @@ public class Utility {
 	static public String dightsChinese = "〇一二三四五六七八九十";
 
 	static public String workingDirectory = "../";
+
+	static public String corpusDirectory() {
+		return workingDirectory + "corpus/";
+	}
+
+	static public String modelsDirectory() {
+		return workingDirectory + "models/";
+	}
+
+	static public String[] convertToSegmentation(String str) {
+		str = Pattern.compile("([" + Utility.sPunctuation + "])").matcher(str).replaceAll(" $1 ");
+
+		str = Pattern.compile("(?<=[\\d]+)( +([\\.．：:]) +)(?=[\\d]+)").matcher(str).replaceAll("$2");
+
+		int length = str.length();
+		while (true) {
+			str = Pattern.compile("([" + Utility.sPunctuation + "]) +\\1").matcher(str).replaceAll("$1$1");
+			if (str.length() < length) {
+				length = str.length();
+				continue;
+			} else
+				break;
+		}
+
+		return str.trim().split("\\s+");
+	}
+
 
 	static public String[] convertWithAlignment(String[]... arr) {
 		String[] res = new String[arr.length];
@@ -415,8 +449,8 @@ public class Utility {
 		int i = 0;
 		for (; i < arr.length - 1; ++i) {
 			str += arr[i];
-			if (Punctuation.indexOf(arr[i].charAt(arr[i].length() - 1)) >= 0
-					|| Punctuation.indexOf(arr[i + 1].charAt(0)) >= 0)
+			if (sPunctuation.indexOf(arr[i].charAt(arr[i].length() - 1)) >= 0
+					|| sPunctuation.indexOf(arr[i + 1].charAt(0)) >= 0)
 				continue;
 			str += " ";
 		}
@@ -429,8 +463,8 @@ public class Utility {
 		int i = 0;
 		for (; i < arr.size() - 1; ++i) {
 			str += arr.get(i);
-			if (Punctuation.indexOf(arr.get(i).charAt(arr.get(i).length() - 1)) >= 0
-					|| Punctuation.indexOf(arr.get(i + 1).charAt(0)) >= 0)
+			if (sPunctuation.indexOf(arr.get(i).charAt(arr.get(i).length() - 1)) >= 0
+					|| sPunctuation.indexOf(arr.get(i + 1).charAt(0)) >= 0)
 				continue;
 			str += " ";
 		}
@@ -784,7 +818,7 @@ public class Utility {
 
 	public static final String EnglishPunctuation = ",.:;!?()[]{}'\"=<>";
 	public static final String ChinesePunctuation = "，。：；！？（）「」『』【】～‘’′”“《》、…．·";
-	public static final String Punctuation = EnglishPunctuation + ChinesePunctuation;
+	public static final String sPunctuation = EnglishPunctuation + ChinesePunctuation;
 	public static final String endOfSentencePunctuation = "？?;；。.．,，…!！、";
 
 	public static final String EnglishSpecial = "*/~|+-@&^#\\`_";
@@ -1652,9 +1686,9 @@ public class Utility {
 			beginIndex = matcher.end();
 		}
 
-		str = Utility.Punctuation;
+		str = Utility.sPunctuation;
 		System.out.println(str); // true
-		tmp = str.replaceAll("[" + Utility.Punctuation.replace("[", "\\[").replace("]", "\\]") + "]", ",");
+		tmp = str.replaceAll("[" + Utility.sPunctuation.replace("[", "\\[").replace("]", "\\]") + "]", ",");
 		System.out.println(tmp); // true
 		System.out.println("tmp.length() = " + tmp.length()); // true
 		System.out.println("str.length() = " + str.length()); // true
@@ -2693,6 +2727,10 @@ public class Utility {
 			// start = new Date().getTime();
 			start = System.currentTimeMillis();
 		}
+		public long lapsedSeconds() {
+			return (System.currentTimeMillis() - start) / 1000;
+		}
+
 
 		public void report() {
 			double dif = System.currentTimeMillis() - start;
@@ -3555,6 +3593,61 @@ public class Utility {
 			// con.commit();
 
 			return res;
+		}
+
+		public DataSource(String url, String user, String password, Driver driver, String serverTimezone) {
+			int minimum = 10;
+			int maximum = 50;
+			// pool configuration
+			HikariConfig config = new HikariConfig();
+			switch (driver) {
+			case mysql:
+				config.setDriverClassName("com.mysql.jdbc.Driver");
+				String value[] = { user, password, "true", "utf-8", "true", serverTimezone};
+				String key[] = { "user", "password", "useUnicode", "characterEncoding", "autoReconnect", "serverTimezone"};
+
+				for (int i = 0; i < value.length; ++i) {
+					url += '&' + key[i] + '=' + value[i];
+				}
+
+				config.setJdbcUrl(url);
+				log.info("url = " + url);
+				config.addDataSourceProperty("prepStmtCacheSqlLimit", 2048);
+				config.setConnectionTestQuery("SELECT 1");
+
+				break;
+			case oracle:
+				// config.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
+				// config.setDataSourceClassName("oracle.jdbc.pool.OracleDataSource");
+				config.setDriverClassName("oracle.jdbc.driver.OracleDriver");
+
+				OracleDataSource dataSource = null;
+				try {
+					dataSource = new OracleDataSource();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				log.info("url = " + url);
+				dataSource.setURL(url);
+				dataSource.setUser(user);
+				dataSource.setPassword(password);
+				config.setDataSource(dataSource);
+				// config.setConnectionTestQuery("SELECT 1");
+				break;
+			}
+
+			config.addDataSourceProperty("cachePrepStmts", true);
+			config.addDataSourceProperty("prepStmtCacheSize", 500);
+
+			config.setAutoCommit(true);
+			// 池中最小空闲链接数量
+			config.setMinimumIdle(minimum);
+			// 池中最大链接数量
+			config.setMaximumPoolSize(maximum);
+
+			ds = new HikariDataSource(config);
 		}
 
 		/**
@@ -6995,4 +7088,282 @@ public class Utility {
 			System.out.print(++i == arr.length ? "\n" : " ");
 		}
 	}
+	
+	public static DoubleMatrix[] add(DoubleMatrix[] x, DoubleMatrix[] y) {
+		DoubleMatrix[] z = new DoubleMatrix[x.length];
+		for (int i = 0; i < x.length; ++i) {
+			z[i] = x[i].add(y[i]);
+		}
+
+		return z;
+	}
+
+	
+	public static DoubleMatrix addi(DoubleMatrix x, DoubleMatrix y) {
+		if (x == null)
+			return y;
+		if (y == null)
+			return x;
+
+		return x.addi(y);
+	}
+
+	public static DoubleMatrix[] addi(DoubleMatrix[] x, DoubleMatrix[] y) {
+		for (int i = 0; i < x.length; ++i) {
+			x[i].addi(y[i]);
+		}
+
+		return x;
+	}
+
+	public static DoubleMatrix[] divi(DoubleMatrix[] x, double y) {
+		for (int i = 0; i < x.length; ++i) {
+			x[i].divi(y);
+		}
+
+		return x;
+	}
+
+
+	public static DoubleMatrix[] concatHorizontally(DoubleMatrix[] x, DoubleMatrix[] y) {
+		DoubleMatrix[] z = new DoubleMatrix[x.length];
+		for (int i = 0; i < x.length; ++i) {
+			z[i] = DoubleMatrix.concatHorizontally(x[i], y[i]);
+		}
+		return z;
+	}
+
+	public static DoubleMatrix[] muli(DoubleMatrix[] x, DoubleMatrix[] y) {
+		for (int i = 0; i < x.length; ++i) {
+			x[i].muli(y[i]);
+		}
+
+		return x;
+	}
+
+	public static class BinaryReader {
+		public DataInputStream dis;
+		private String s_FilePath;
+
+		public BinaryReader(String file) throws FileNotFoundException {
+			s_FilePath = file;
+			dis = new DataInputStream(new FileInputStream(new File(s_FilePath)));
+		}
+
+		public double[] readArray1() throws IOException {
+			int dimension = dis.readInt();
+			System.out.printf("x = %d\n", dimension);
+			double[] arr = new double[dimension];
+			for (int i = 0; i < arr.length; ++i) {
+				arr[i] = dis.readDouble();
+			}
+//			System.out.println(Utility.toString(arr));
+			return arr;
+		}
+
+		public double[][] readArray2() throws IOException {
+			int dimension0 = dis.readInt();
+			int dimension1 = dis.readInt();
+			System.out.printf("x = %d, y = %d\n", dimension0, dimension1);
+
+			double[][] arr = new double[dimension0][dimension1];
+			for (int i0 = 0; i0 < arr.length; ++i0) {
+				for (int i1 = 0; i1 < arr[i0].length; ++i1) {
+					arr[i0][i1] = dis.readDouble();
+				}
+			}
+//			System.out.println(Utility.toString(arr[0]));
+			return arr;
+		}
+
+		public HashMap<String, Integer> readMap(HashMap<String, Integer> word2id) throws IOException {
+			int length = dis.readInt();
+			System.out.printf("length = %d\n", length);
+
+			for (int i = 0; i < length; ++i) {
+				char[] arr = new char[dis.readInt()];
+				for (int j = 0; j < arr.length; ++j) {
+					arr[j] = dis.readChar();
+				}
+				word2id.put(new String(arr), dis.readInt());
+			}
+
+			return word2id;
+		}
+
+		public HashMap<Character, Integer> readCharMap(HashMap<Character, Integer> word2id) throws IOException {
+			int length = dis.readInt();
+			System.out.printf("length = %d\n", length);
+
+			for (int i = 0; i < length; ++i) {
+				word2id.put(dis.readChar(), dis.readInt());
+			}
+
+			return word2id;
+		}
+
+		public double[][][] readArray3() throws IOException {
+			int dimension0 = dis.readInt();
+			int dimension1 = dis.readInt();
+			int dimension2 = dis.readInt();
+			System.out.printf("d0 = %d, d1 = %d, d2 = %d\n", dimension0, dimension1, dimension2);
+			double[][][] arr = new double[dimension0][dimension1][dimension2];
+			for (int i0 = 0; i0 < arr.length; ++i0) {
+				for (int i1 = 0; i1 < arr[i0].length; ++i1) {
+					for (int i2 = 0; i2 < arr[i0][i1].length; ++i2) {
+						arr[i0][i1][i2] = dis.readDouble();
+					}
+				}
+			}
+//			System.out.println(Utility.toString(arr[0][0]));
+			return arr;
+		}
+
+		public double[][][][] readArray4() throws IOException {
+			int dimension0 = dis.readInt();
+			int dimension1 = dis.readInt();
+			int dimension2 = dis.readInt();
+			int dimension3 = dis.readInt();
+			System.out.printf("d0 = %d, d1 = %d, d2 = %d, d3 = %d\n", dimension0, dimension1, dimension2, dimension3);
+			double[][][][] arr = new double[dimension0][dimension1][dimension2][dimension3];
+			for (int i0 = 0; i0 < arr.length; ++i0) {
+				for (int i1 = 0; i1 < arr[i0].length; ++i1) {
+					for (int i2 = 0; i2 < arr[i0][i1].length; ++i2) {
+						for (int i3 = 0; i3 < arr[i0][i1][i2].length; ++i3) {
+							arr[i0][i1][i2][i3] = dis.readDouble();
+						}
+					}
+				}
+			}
+//			System.out.println(Utility.toString(arr[0][0][0]));
+			return arr;
+		}
+
+		public double[][][][][] readArray5() throws IOException {
+			int dimension0 = dis.readInt();
+			int dimension1 = dis.readInt();
+			int dimension2 = dis.readInt();
+			int dimension3 = dis.readInt();
+			int dimension4 = dis.readInt();
+			System.out.printf("d0 = %d, d1 = %d, d2 = %d, d3 = %d, d4 = %d\n", dimension0, dimension1, dimension2,
+					dimension3, dimension4);
+			double[][][][][] arr = new double[dimension0][dimension1][dimension2][dimension3][dimension4];
+			for (int i0 = 0; i0 < arr.length; ++i0) {
+				for (int i1 = 0; i1 < arr[i0].length; ++i1) {
+					for (int i2 = 0; i2 < arr[i0][i1].length; ++i2) {
+						for (int i3 = 0; i3 < arr[i0][i1][i2].length; ++i3) {
+							for (int i4 = 0; i4 < arr[i0][i1][i2][i3].length; ++i4) {
+								arr[i0][i1][i2][i3][i4] = dis.readDouble();
+							}
+						}
+					}
+				}
+			}
+//			System.out.println(Utility.toString(arr[0][0][0][0]));
+			return arr;
+		}
+
+		public void readBinaryStream() {
+			try {
+				if (dis != null) {
+					while (dis.available() > 0) {
+						System.out.println(dis.available());
+						System.out.println(dis.readBoolean());
+						char c = (char) dis.readChar();
+						System.out.println(c);
+						System.out.println(dis.readDouble());
+						System.out.println(dis.readFloat());
+						System.out.println(dis.readInt());
+						System.out.println(dis.readLong());
+						System.out.println(dis.readShort());
+						System.out.println(dis.readUTF());
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static double toDouble(float x) {
+		return x;
+	}
+
+	public static double[] toDouble(float x[]) {
+		double[] y = new double[x.length];
+		for (int i = 0; i < y.length; i++) {
+			y[i] = x[i];
+		}
+		return y;
+	}
+
+	public static double[][] toDouble(float x[][]) {
+		double[][] y = new double[x.length][];
+		for (int i = 0; i < y.length; i++) {
+			y[i] = toDouble(x[i]);
+		}
+		return y;
+	}
+
+	static public double min(DoubleMatrix x, int row_index) {
+		double v = Double.POSITIVE_INFINITY;
+		for (int i = row_index, end = row_index + x.columns * x.rows; i < end; i += x.rows) {
+			double xi = x.get(i);
+			if (xi == xi && xi < v) {
+				v = xi;
+			}
+		}
+		return v;
+	}
+
+	static public int argmin(DoubleMatrix x, int row_index) {
+		double v = Double.POSITIVE_INFINITY;
+		int argmin = -1;
+		for (int i = row_index, end = row_index + x.columns * x.rows, j = 0; i < end; i += x.rows, ++j) {
+			double xi = x.get(i);
+			if (xi == xi && xi < v) {
+				v = xi;
+				argmin = j;
+			}
+		}
+		return argmin;
+	}
+
+	static public int[] argmin(DoubleMatrix x) {
+		int[] arr = new int[x.rows];
+		for (int i = 0; i < x.rows; ++i) {
+			arr[i] = argmin(x, i);
+		}
+		return arr;
+	}
+
+	static public DoubleMatrix min(DoubleMatrix x) {
+		double[] arr = new double[x.rows];
+		for (int i = 0; i < x.rows; ++i) {
+			arr[i] = min(x, i);
+		}
+		// return a row vector!
+		return new DoubleMatrix(1, x.rows, arr);
+	}
+
+	static public String jsonify(Object object) throws JsonProcessingException {
+		return new ObjectMapper().writeValueAsString(object);
+	}
+
+
+	static public <String> String[] tuple(String... arr) {
+		return arr;
+	}
+	static public <String> List<String> list(String... arr) {
+		ArrayList<String> list = new ArrayList<String>(arr.length);
+		for (int i = 0; i < arr.length; i++) {
+			list.add(arr[i]);
+		}
+
+		return list;
+	}
+	static public <T> T dejsonify(String json, Class<T> valueType) throws IOException {
+		return new ObjectMapper().readValue(json, valueType);
+	}
+
 }

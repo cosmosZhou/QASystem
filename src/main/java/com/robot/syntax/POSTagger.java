@@ -542,7 +542,7 @@ public class POSTagger extends MaxentTagger {
 
 	public static POSTagger instance;
 	static {
-		instance = new POSTagger(Utility.workingDirectory + "models/chinese.tagger");
+		instance = new POSTagger(Utility.workingDirectory + "models/cn/chinese.tagger");
 		((ExtractorFrames.ExtractorIntonation) instance.extractors.v[8]).dict = instance.dict.dict;
 		instance.wordFunction = null;
 	}

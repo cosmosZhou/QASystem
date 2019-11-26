@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.deeplearning.CWSTagger;
 import com.util.Utility;
 import com.util.Utility.Printer;
 
@@ -47,7 +48,7 @@ public class SyntacticParser extends DependencyParser {
 	public SyntacticParser() {
 	}
 
-	static String modelPath = Utility.workingDirectory + "models/dep.gz";
+	static String modelPath = Utility.workingDirectory + "models/cn/dep.gz";
 
 	protected ArcStandard system;
 

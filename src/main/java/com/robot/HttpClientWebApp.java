@@ -22,39 +22,39 @@ public class HttpClientWebApp {
 		local, test, product
 	}
 
-	//	static Environment environment = Environment.local;
-	static Environment environment = Environment.test;
-	//	static Environment environment = Environment.product;
+	 static Environment environment = Environment.local;
+//	static Environment environment = Environment.test;
+	// static Environment environment = Environment.product;
 	static String server;
 	static String companyPk;
 	static {
 		switch (environment) {
 		case local:
 			server = "http://127.0.0.1:8080";
-			//			companyPk = "8a28ccbd4ff3073d015002726d3f15fa";
+			// companyPk = "8a28ccbd4ff3073d015002726d3f15fa";
 			companyPk = "ff8080815ca5319a015ca60fd4580577";
 			break;
 		case test:
-			//			server = "http://121.40.130.192:8080";
-			//			server = "http://192.168.11.94:7005";
+			// server = "http://121.40.130.192:8080";
+			// server = "http://192.168.11.94:7005";
 			server = "http://192.168.11.61:8080";
 
-			//			server = "http://ronghe.any800.com/";
-			//			server = "http://121.41.80.95:8081";
+			// server = "http://ronghe.any800.com/";
+			// server = "http://121.41.80.95:8081";
 
-			//			server = "http://192.168.11.60:8080";
+			// server = "http://192.168.11.60:8080";
 
-			//						server = "http://192.168.11.55:8080";
-			//			server = "http://116.239.24.10:8080";
+			// server = "http://192.168.11.55:8080";
+			// server = "http://116.239.24.10:8080";
 
-			//			companyPk = "ff8080815ca5319a015ca60fd4580577";
-			//			companyPk = "8a28ccbd4ff3073d015002726d3f15fa";
+			// companyPk = "ff8080815ca5319a015ca60fd4580577";
+			// companyPk = "8a28ccbd4ff3073d015002726d3f15fa";
 			break;
 		case product:
 			server = "http://172.16.0.7:7005";
-			//			server = "http://172.16.16.118:8080";
+			// server = "http://172.16.16.118:8080";
 
-			//			companyPk = "8a28ccbd4d51f3be014d564cc91417d4";
+			// companyPk = "8a28ccbd4d51f3be014d564cc91417d4";
 			companyPk = "2c9080885c5f009c015c5f1ef633041c";
 			break;
 		}
@@ -66,7 +66,8 @@ public class HttpClientWebApp {
 	}
 
 	String functionPathPrefix() {
-		return server + "/QASystemInterface/resteasy/Knowledge/";
+//		return server + "/QASystemInterface/resteasy/Knowledge/";
+		return server + "/QASystem/Knowledge/";
 	}
 
 	static class Parameter {
@@ -102,7 +103,8 @@ public class HttpClientWebApp {
 		try {
 			for (Parameter para : args) {
 
-				method.addParameter(para.field, para.bEncode ? URLEncoder.encode(para.argument, "UTF-8") : para.argument);
+				method.addParameter(para.field,
+						para.bEncode ? URLEncoder.encode(para.argument, "UTF-8") : para.argument);
 			}
 		} catch (IllegalArgumentException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
@@ -164,32 +166,34 @@ public class HttpClientWebApp {
 
 	public void update() throws UnsupportedEncodingException, FileNotFoundException, InterruptedException {
 		companyPk = "ff8080815ce312bf015ce318b0621111";
-		//		ff8080815ce312bf015ce318b0620002
-		//		String regex = "INSERT INTO `ecchatrecords_copy` VALUES \\('([\\s\\S]+)', [\\S]+, [\\S]+\\);";
-		//		for (String str : new Utility.StringReader(Utility.workingDirectory + "record.txt")) {
-		//			//			log.info(str);
-		//			//			String[] res = Utility.regexSingleton(str, regex);
-		//			//			if (res == null)
-		//			//				continue;
-		//			if (str.length() <= 2)
-		//				continue;
+		// ff8080815ce312bf015ce318b0620002
+		// String regex = "INSERT INTO `ecchatrecords_copy` VALUES \\('([\\s\\S]+)',
+		// [\\S]+, [\\S]+\\);";
+		// for (String str : new Utility.StringReader(Utility.workingDirectory +
+		// "record.txt")) {
+		// // log.info(str);
+		// // String[] res = Utility.regexSingleton(str, regex);
+		// // if (res == null)
+		// // continue;
+		// if (str.length() <= 2)
+		// continue;
 		//
-		//			if (str.startsWith("\"")) {
-		//				str = str.substring(1, str.length() - 1);
-		//			}
+		// if (str.startsWith("\"")) {
+		// str = str.substring(1, str.length() - 1);
+		// }
 		//
-		//			log.info(str);
-		//			//			content = content.replace("\\\'", "'");
-		//			//			content = content.replace("\\\"", """);
-		//			update(str);
-		//			Thread.sleep(8 * 1000);
-		//		}
-		//		companyPk = "ff8080815ce312bf015ce318b0620002";
+		// log.info(str);
+		// // content = content.replace("\\\'", "'");
+		// // content = content.replace("\\\"", """);
+		// update(str);
+		// Thread.sleep(8 * 1000);
+		// }
+		// companyPk = "ff8080815ce312bf015ce318b0620002";
 		String question = "你好周末你去哪里玩";
 		String answer = "你好去佘山啊!";
 
-		//		String question = "请问测试有多少人";
-		//		String answer = "测试有8人";
+		// String question = "请问测试有多少人";
+		// String answer = "测试有8人";
 
 		String arr[] = { "CUSTOMER: " + question, "OPERATOR: " + answer };
 
@@ -244,7 +248,8 @@ public class HttpClientWebApp {
 
 	public void updateFromExcel() throws Exception {
 		companyPk = "ff8080815d777c84015d778c0224002d";
-		InformationExtraction informationExtraction = new InformationExtraction(Utility.workingDirectory + "chatRecordTest.xls");
+		InformationExtraction informationExtraction = new InformationExtraction(
+				Utility.workingDirectory + "chatRecordTest.xls");
 
 		for (Conversation conversation : informationExtraction.new DialogueDialysis()) {
 			String jeson = conversation.toHTML();
@@ -284,13 +289,13 @@ public class HttpClientWebApp {
 	}
 
 	public void updateFromDialogue() {
-		//		companyPk = "40288ba05a1eb9f9015a1ef95313031c";
+		// companyPk = "40288ba05a1eb9f9015a1ef95313031c";
 		companyPk = "2c908088594a7757015a63f6929e5f99";
 		String fileName = "E:\\360\\solution\\chatRecord.xls";
-		//		String fileName = "E:\\360\\solution\\凯翼对话记录-智能推荐话术.xls";
+		// String fileName = "E:\\360\\solution\\凯翼对话记录-智能推荐话术.xls";
 
 		try {
-			//			QASystem.instance.getRepertoire(companyPk).updateFromDialogue(fileName);
+			// QASystem.instance.getRepertoire(companyPk).updateFromDialogue(fileName);
 			Parameter[] args = new Parameter[2];
 			args[0] = new Parameter("companyPk", companyPk, false);
 			args[1] = new Parameter("excelFile", fileName, false);
@@ -316,13 +321,13 @@ public class HttpClientWebApp {
 	public void search() {
 		companyPk = "ff808081622904140162625ffda403ac";
 		String question = "预算是多少";
-		//		你的心情怎样啊
-		//		companyPk = "2c9090f05b180ead015b18406dfe0009";
+		// 你的心情怎样啊
+		// companyPk = "2c9090f05b180ead015b18406dfe0009";
 		Parameter[] args = new Parameter[2];
 		args[0] = new Parameter("companyPk", companyPk);
 
 		// String question = "倘若汽车的使用期限是五个月,请问满足首保条件吗？",
-		//		String question = "倘若汽车的使用期限是半年,请问符合首保条件吗？";
+		// String question = "倘若汽车的使用期限是半年,请问符合首保条件吗？";
 
 		args[1] = new Parameter("question", question, true);
 		String res = postMethod("search", args, true);
@@ -335,7 +340,8 @@ public class HttpClientWebApp {
 			String recommendedFAQ = js.get("recommendedFAQ").toString();
 			String time = js.get("time").toString();
 
-			log.info("answer : " + answer + " \twith confidence = " + confidence + ", recommendedFAQ = " + recommendedFAQ + ", time = " + time);
+			log.info("answer : " + answer + " \twith confidence = " + confidence + ", recommendedFAQ = "
+					+ recommendedFAQ + ", time = " + time);
 		}
 	}
 
@@ -393,9 +399,9 @@ public class HttpClientWebApp {
 
 	public void automaticResponse() {
 		companyPk = "ff8080815d5fc2f7015d62d371940003";
-		//		String question = "你们公司怎么样？";
-		//		String question = "告诉我你们公司的地址。";
-		//		String question = "你们公司的地址在哪。";
+		// String question = "你们公司怎么样？";
+		// String question = "告诉我你们公司的地址。";
+		// String question = "你们公司的地址在哪。";
 		String question = "今天我心情很好";
 		question = "你好";
 		question = "您好";
@@ -487,7 +493,8 @@ public class HttpClientWebApp {
 	public void exportUnsupervisedWithCriteria() throws ParseException, Exception {
 		companyPk = "40288ba05a1eb9f9015a1ef95313031c";
 		// String fullUploadPath = Utility.createTemporaryFile("xlsx");
-		//		Parameter[] args = { new Parameter("companyPk", companyPk), new Parameter("criteria", "婴儿", true), };
+		// Parameter[] args = { new Parameter("companyPk", companyPk), new
+		// Parameter("criteria", "婴儿", true), };
 		Parameter[] args = { new Parameter("companyPk", companyPk), };
 
 		// args[1] = new Parameter("excelFile", fullUploadPath);
@@ -499,11 +506,13 @@ public class HttpClientWebApp {
 			log.info("obj = \n" + obj);
 		}
 
-		//		log.info("res = " + res);
+		// log.info("res = " + res);
 	}
 
 	public void report() throws ParseException, Exception {
-		Parameter[] args = { new Parameter("companyPk", "8a28ccbd583e330b01584cd008fb0674"), new Parameter("start", "2016-11-29 00:00:00"), new Parameter("end", "2016-11-29 20:06:00"), new Parameter("period", "0") };
+		Parameter[] args = { new Parameter("companyPk", "8a28ccbd583e330b01584cd008fb0674"),
+				new Parameter("start", "2016-11-29 00:00:00"), new Parameter("end", "2016-11-29 20:06:00"),
+				new Parameter("period", "0") };
 
 		String res = postMethod("report", args);
 
@@ -511,7 +520,9 @@ public class HttpClientWebApp {
 	}
 
 	public void salient() throws ParseException, Exception {
-		Parameter[] args = { new Parameter("companyPk", "8a28ccbd583e330b01584cd008fb0674"), new Parameter("start", "2016-11-29 00:00:00"), new Parameter("end", "2016-11-29 20:06:00"), new Parameter("nBest", "10") };
+		Parameter[] args = { new Parameter("companyPk", "8a28ccbd583e330b01584cd008fb0674"),
+				new Parameter("start", "2016-11-29 00:00:00"), new Parameter("end", "2016-11-29 20:06:00"),
+				new Parameter("nBest", "10") };
 
 		String res = postMethod("salient", args, true);
 
@@ -568,56 +579,57 @@ public class HttpClientWebApp {
 	}
 
 	public void submitSupervised() throws ParseException, Exception {
-		//		String fileName = Utility.workingDirectory + "submitSupervised.xlsx";
+		// String fileName = Utility.workingDirectory + "submitSupervised.xlsx";
 		String fileName = Utility.workingDirectory + "faqtest.xls";
 		companyPk = "2d9080895c64830e015c67929ed603ef";
-		//		ArrayList<String[]> list = Utility.readFromExcel(fileName, "Supervised", 2);
-		//		ArrayMap<String, String> map = new ArrayMap<String, String>();
-		//		for (String[] arr : list) {
-		//			String question = arr[0];
-		//			if (question == null)
-		//				continue;
-		//			String answer = arr[1];
-		//			if (answer == null)
-		//				continue;
-		//			answer = Utility.format(answer);
-		//			//			log.info("question = " + question);
-		//			System.out.println(answer);
-		//			if (answer == null)
-		//				continue;
-		//			//			map.put(question, answer);
-		//			//			submitSupervisedFAQ(question, answer);
-		//		}
+		// ArrayList<String[]> list = Utility.readFromExcel(fileName, "Supervised", 2);
+		// ArrayMap<String, String> map = new ArrayMap<String, String>();
+		// for (String[] arr : list) {
+		// String question = arr[0];
+		// if (question == null)
+		// continue;
+		// String answer = arr[1];
+		// if (answer == null)
+		// continue;
+		// answer = Utility.format(answer);
+		// // log.info("question = " + question);
+		// System.out.println(answer);
+		// if (answer == null)
+		// continue;
+		// // map.put(question, answer);
+		// // submitSupervisedFAQ(question, answer);
+		// }
 		//
-		//		for (String[] arr : list) {
-		//			String question = arr[0];
-		//			if (question == null)
-		//				continue;
-		//			String answer = arr[1];
-		//			if (answer == null)
-		//				continue;
-		//			answer = Utility.format(answer);
-		//			log.info("question = " + question);
-		//			log.info("answer = " + answer);
-		//			if (answer == null)
-		//				continue;
-		//			map.put(question, answer);
-		//			submitSupervisedFAQ(question, answer);
-		//		}
+		// for (String[] arr : list) {
+		// String question = arr[0];
+		// if (question == null)
+		// continue;
+		// String answer = arr[1];
+		// if (answer == null)
+		// continue;
+		// answer = Utility.format(answer);
+		// log.info("question = " + question);
+		// log.info("answer = " + answer);
+		// if (answer == null)
+		// continue;
+		// map.put(question, answer);
+		// submitSupervisedFAQ(question, answer);
+		// }
 		//
-		//		ArrayList<String[]> listNatural = Utility.readFromExcel(fileName, "related", 2);
-		//		for (String[] arr : listNatural) {
-		//			String question1 = arr[0];
-		//			if (question1 == null)
-		//				continue;
-		//			String question = arr[1];
-		//			if (question == null)
-		//				continue;
-		//			String answer = map.get(question1);
-		//			log.info("question = " + question);
-		//			log.info("answer = " + answer);
-		//			update(question, answer);
-		//		}
+		// ArrayList<String[]> listNatural = Utility.readFromExcel(fileName, "related",
+		// 2);
+		// for (String[] arr : listNatural) {
+		// String question1 = arr[0];
+		// if (question1 == null)
+		// continue;
+		// String question = arr[1];
+		// if (question == null)
+		// continue;
+		// String answer = map.get(question1);
+		// log.info("question = " + question);
+		// log.info("answer = " + answer);
+		// update(question, answer);
+		// }
 
 		Parameter[] args = new Parameter[3];
 		args[0] = new Parameter("companyPk", companyPk);
@@ -653,21 +665,21 @@ public class HttpClientWebApp {
 		// String question = "Any800是什么？";
 		// String answer = "Any800就是全渠道";
 
-		//		String question = "请告诉我你们公司的地址。";
-		//		String answer = "我们公司在上海市。(业务知识库)";
-		//		String question = "请问测试有几人";
-		//		String answer = "测试有6人";
+		// String question = "请告诉我你们公司的地址。";
+		// String answer = "我们公司在上海市。(业务知识库)";
+		// String question = "请问测试有几人";
+		// String answer = "测试有6人";
 
 		String question = "请问测试有多少人";
 		String answer = "测试有8人";
-		//				String question = "请问测试有哪些人";
-		//				String answer = "测试有A,B,C等";
+		// String question = "请问测试有哪些人";
+		// String answer = "测试有A,B,C等";
 
-		//		String question = "我想知道你们公司的联系方式。";
-		//		String answer = "我们的联系方式是010-12345678。(业务知识库)";
+		// String question = "我想知道你们公司的联系方式。";
+		// String answer = "我们的联系方式是010-12345678。(业务知识库)";
 
-		//		String question = "怎样办理登机手续？";
-		//		String answer = "您可以到机场服务中心办理登机手续";
+		// String question = "怎样办理登机手续？";
+		// String answer = "您可以到机场服务中心办理登机手续";
 
 		// String question = "你好吗？";
 		// String answer = "您好，欢迎使用自助问答系统。";
@@ -707,17 +719,17 @@ public class HttpClientWebApp {
 	}
 
 	public void deleteEntity() {
-		//		companyPk = "00000000000000000000000000000000";
+		// companyPk = "00000000000000000000000000000000";
 		companyPk = "ff8080815ce312bf015ce318b0621111";
 
-		//		String question = "香蕉多少钱一斤";
-		//		String answer = "5元钱一斤";
+		// String question = "香蕉多少钱一斤";
+		// String answer = "5元钱一斤";
 		String question = "周末你去哪里玩";
 		String answer = "去佘山啊!";
 
-		//		String question = "香蕉多少钱一斤";
-		//		String answer = "10元一斤";
-		//		
+		// String question = "香蕉多少钱一斤";
+		// String answer = "10元一斤";
+		//
 
 		Parameter[] args = new Parameter[3];
 
@@ -738,53 +750,53 @@ public class HttpClientWebApp {
 
 	public static void main(String[] args) throws ParseException, Exception {
 		HttpClientWebApp webApp = new HttpClientWebApp();
-		//		log.info("regex = " + CWSTagger.InstanceReader.regex);
-		//		webApp.learning();
-		//				webApp.updateFromDialogue();
-		//		webApp.corpusTraining();
+		// log.info("regex = " + CWSTagger.InstanceReader.regex);
+		// webApp.learning();
+		// webApp.updateFromDialogue();
+		webApp.corpusTraining();
 
-		//				webApp.updateTeletext();
-		//						webApp.searchTeletext();
-		//				webApp.updateFromExcel();
-		//				webApp.topicClassification();
+		// webApp.updateTeletext();
+		// webApp.searchTeletext();
+		// webApp.updateFromExcel();
+		// webApp.topicClassification();
 		webApp.update();
 		webApp.search();
-		//		webApp.recommendReportAndLearnPOST();
-		//		webApp.deleteEntity();
-		//		 webApp.submitSupervised();
-		//		webApp.search();
-		//		webApp.searchForQuestionByKeywords();
+		// webApp.recommendReportAndLearnPOST();
+		// webApp.deleteEntity();
+		// webApp.submitSupervised();
+		// webApp.search();
+		// webApp.searchForQuestionByKeywords();
 
-		//		webApp.submitSupervised();
-		//		webApp.exportSupervised();
-		//		webApp.deleteEntity();
-		//				webApp.exportSupervised();
-		//		webApp.submitSupervisedFAQ();
+		// webApp.submitSupervised();
+		// webApp.exportSupervised();
+		// webApp.deleteEntity();
+		// webApp.exportSupervised();
+		// webApp.submitSupervisedFAQ();
 		// Utility.Timer timer = new Utility.Timer();
 		// timer.start();
 		// for (int i = 0;i < 10000; ++i){
-		//		webApp.automaticResponse();
-		//		webApp.exportUnsupervised();
-		//		webApp.updateFromDialogue();
+		// webApp.automaticResponse();
+		// webApp.exportUnsupervised();
+		// webApp.updateFromDialogue();
 
 		// }
 		// timer.cease();
 		// webApp.submitUnknown();
 
-		//		 webApp.search();
-		//		webApp.exportSupervised();
+		// webApp.search();
+		// webApp.exportSupervised();
 		// webApp.exportSupervisedWithCriteria();
-		//				webApp.exportUnsupervised();
+		// webApp.exportUnsupervised();
 
-		//		webApp.exportUnsupervisedWithCriteria();
-		//		webApp.exportUnknownWithCriteria();
+		// webApp.exportUnsupervisedWithCriteria();
+		// webApp.exportUnknownWithCriteria();
 		// webApp.submitUnknownQuestion();
-		//		 webApp.export();
+		// webApp.export();
 		// webApp.exportUnknown();
-		//		webApp.report();
+		// webApp.report();
 		// webApp.salient();
-		//		webApp.recommendReportAndLearn();
-		//		webApp.learningFromReservoir();
+		// webApp.recommendReportAndLearn();
+		// webApp.learningFromReservoir();
 	}
 
 	public static Logger log = Logger.getLogger(HttpClientWebApp.class);

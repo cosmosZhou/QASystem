@@ -11,11 +11,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.robot.Repertoire;
-import com.robot.semantic.SyntaxCoach;
 import com.robot.semantic.RNN.RNNTopicClassifier;
 import com.robot.QACouplet;
 
@@ -57,7 +57,8 @@ public class Knowledge {
 			keyword = URLDecoder.decode(keyword, "UTF-8");
 			log.info("keyword = " + keyword + " with companyPk = " + companyPk);
 
-			result = URLEncoder.encode(QASystem.instance.getRepertoire(companyPk).searchForQuestionByKeywordsJSONArray(keyword).toJSONString(), "UTF-8");
+			result = URLEncoder.encode(QASystem.instance.getRepertoire(companyPk)
+					.searchForQuestionByKeywordsJSONArray(keyword).toJSONString(), "UTF-8");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -206,7 +207,9 @@ public class Knowledge {
 			question = URLDecoder.decode(question, "UTF-8");
 			log.info("question = " + question + " with companyPk = " + companyPk);
 
-			result = URLEncoder.encode(QASystem.instance.getRepertoire(companyPk).searchTeletextJSONArray(question).toJSONString(), "UTF-8");
+			result = URLEncoder.encode(
+					QASystem.instance.getRepertoire(companyPk).searchTeletextJSONArray(question).toJSONString(),
+					"UTF-8");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -331,7 +334,7 @@ public class Knowledge {
 	@Produces(MediaType.TEXT_PLAIN)
 	public String updateThresholdPOST(@Context HttpServletRequest request) {
 		String companyPk = request.getParameter("companyPk");
-		// threshold 
+		// threshold
 		double threshold = Double.parseDouble(request.getParameter("threshold")) / 100;
 		try {
 			log.info("companyPk = " + companyPk + " with threshold = " + threshold);
@@ -360,7 +363,7 @@ public class Knowledge {
 
 		final String httpPath = request.getParameter("excelFile");
 		String size = request.getParameter("size");
-		//		java.io.File excelDiskFileToBeDeleted = null;
+		// java.io.File excelDiskFileToBeDeleted = null;
 		String result = null;
 		JSONObject object = new JSONObject();
 		try {
@@ -380,13 +383,15 @@ public class Knowledge {
 						String excelDisk;
 						if (httpPath.toLowerCase().startsWith("http://")) {
 							excelDisk = Utility.readFileFromURL(httpPath);
-							//				excelDiskFileToBeDeleted = new java.io.File(excelDisk);
+							// excelDiskFileToBeDeleted = new java.io.File(excelDisk);
 						} else {
 							excelDisk = httpPath;
 						}
 
-						//				float cnt = QASystem.instance.getRepertoire(companyPk).updateFromDialogueCheckingValidity(excelDisk) / 1200f;
-						//						QASystem.instance.updateFromDialogue(companyPk, excelDisk);
+						// float cnt =
+						// QASystem.instance.getRepertoire(companyPk).updateFromDialogueCheckingValidity(excelDisk)
+						// / 1200f;
+						// QASystem.instance.updateFromDialogue(companyPk, excelDisk);
 						QASystem.instance.getRepertoire(companyPk).updateFromDialogue(excelDisk);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
@@ -400,8 +405,8 @@ public class Knowledge {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			//			if (excelDiskFileToBeDeleted != null)
-			//				excelDiskFileToBeDeleted.delete();
+			// if (excelDiskFileToBeDeleted != null)
+			// excelDiskFileToBeDeleted.delete();
 		}
 
 		return result;
@@ -521,9 +526,10 @@ public class Knowledge {
 				excelDisk = httpPath;
 			}
 
-			//			String[][] errorInformation = QASystem.instance.getRepertoire(companyPk).checkValidityForSupervisedInsertion(excelDisk);
-			//			log.info("errorInformation.length = " + errorInformation.length);
-			//			if (errorInformation.length == 0) {
+			// String[][] errorInformation =
+			// QASystem.instance.getRepertoire(companyPk).checkValidityForSupervisedInsertion(excelDisk);
+			// log.info("errorInformation.length = " + errorInformation.length);
+			// if (errorInformation.length == 0) {
 			object.put("success", true);
 			QASystem.instance.execute(new Runnable() {
 				public void run() {
@@ -541,8 +547,8 @@ public class Knowledge {
 			e.printStackTrace();
 
 		} finally {
-			//			if (excelDiskFileToBeDeleted != null)
-			//				excelDiskFileToBeDeleted.delete();
+			// if (excelDiskFileToBeDeleted != null)
+			// excelDiskFileToBeDeleted.delete();
 		}
 
 		try {
@@ -562,8 +568,8 @@ public class Knowledge {
 	}
 
 	/**
-	 * submit a single pair of question and answer a warning should be issued if
-	 * you try to submit the same or similar pair of question and answer
+	 * submit a single pair of question and answer a warning should be issued if you
+	 * try to submit the same or similar pair of question and answer
 	 * 
 	 * @param request
 	 * @return
@@ -588,27 +594,31 @@ public class Knowledge {
 			log.info("newQuestion = " + newQuestion);
 			log.info("newAnswer = " + newAnswer);
 
-			//			LikeEntity likeEntity = null;
+			// LikeEntity likeEntity = null;
 			if (oldQuestion != null) {
 				oldQuestion = URLDecoder.decode(oldQuestion, "UTF-8");
 				oldAnswer = URLDecoder.decode(oldAnswer, "UTF-8");
 
-				//				log.info("oldQuestion = " + oldQuestion);
-				//				log.info("oldAnswer = " + oldAnswer);
+				// log.info("oldQuestion = " + oldQuestion);
+				// log.info("oldAnswer = " + oldAnswer);
 
-				//				likeEntity = QASystem.instance.getRepertoire(companyPk).checkValidityForSupervisedInsertion(newQuestion, newAnswer, oldQuestion);
+				// likeEntity =
+				// QASystem.instance.getRepertoire(companyPk).checkValidityForSupervisedInsertion(newQuestion,
+				// newAnswer, oldQuestion);
 			} else {
-				//				likeEntity = QASystem.instance.getRepertoire(companyPk).checkValidityForSupervisedInsertion(newQuestion, newAnswer, null);
+				// likeEntity =
+				// QASystem.instance.getRepertoire(companyPk).checkValidityForSupervisedInsertion(newQuestion,
+				// newAnswer, null);
 
 			}
-			//			if (likeEntity != null) {
-			//				object.put("question", likeEntity.question);
-			//				object.put("answer", likeEntity.answer);
-			//				object.put("conflict", true);
-			//				object.put("message", "Like entities have been detected.");
+			// if (likeEntity != null) {
+			// object.put("question", likeEntity.question);
+			// object.put("answer", likeEntity.answer);
+			// object.put("conflict", true);
+			// object.put("message", "Like entities have been detected.");
 			//
-			//				log.info("Like entities have been detected.");
-			//			} else {
+			// log.info("Like entities have been detected.");
+			// } else {
 
 			QASystem.instance.execute(new Runnable() {
 				@Override
@@ -625,7 +635,7 @@ public class Knowledge {
 			object.put("conflict", false);
 			object.put("message", "insertion succeeded.");
 			log.info("insertion succeeded.");
-			//			}
+			// }
 		} catch (Exception e) {
 			e.printStackTrace();
 			object.put("conflict", false);
@@ -649,8 +659,8 @@ public class Knowledge {
 	}
 
 	/**
-	 * submit a list of question and answer; a warning should be issued if you
-	 * try to submit the same or similar pair of question and answer
+	 * submit a list of question and answer; a warning should be issued if you try
+	 * to submit the same or similar pair of question and answer
 	 * 
 	 * @param request
 	 * @return
@@ -1035,7 +1045,8 @@ public class Knowledge {
 			log.info("start = " + start);
 			log.info("end = " + end);
 
-			for (Couplet<String, int[]> couplet : QASystem.report_top_concerns(companyPk, Integer.parseInt(nBest), start, end)) {
+			for (Couplet<String, int[]> couplet : QASystem.report_top_concerns(companyPk, Integer.parseInt(nBest),
+					start, end)) {
 				JSONObject object = new JSONObject();
 				object.put("question", couplet.x);
 
@@ -1141,7 +1152,8 @@ public class Knowledge {
 			QASystem.report(company_pk, question, actualAnswer, selectedAnswer, time, recommendedFAQ, selectedFAQ);
 
 			if (actualAnswer != null && !actualAnswer.isEmpty()) {
-				QASystem.instance.getRepertoire(company_pk).insertQACoupletRobot(question, actualAnswer, Utility.parseDateFormat(time));
+				QASystem.instance.getRepertoire(company_pk).insertQACoupletRobot(question, actualAnswer,
+						Utility.parseDateFormat(time));
 			}
 		} catch (Exception e) {
 
@@ -1163,29 +1175,6 @@ public class Knowledge {
 	@Produces(MediaType.TEXT_PLAIN)
 	public String recommendReportAndLearnGET(@Context HttpServletRequest request) {
 		return this.recommendReportAndLearnPOST(request);
-	}
-
-	@POST
-	@Path("/learning")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String learningPOST(@Context HttpServletRequest request) {
-
-		try {
-			log.info("SyntaxCoach.learning() is invoked.");
-			SyntaxCoach.learning();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return "{\"success\":\"false\"}";
-		}
-		return "{\"success\":\"true\"}";
-	}
-
-	@GET
-	@Path("/learning")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String learningGET(@Context HttpServletRequest request) {
-		return this.learningPOST(request);
 	}
 
 	@POST
@@ -1222,7 +1211,7 @@ public class Knowledge {
 	public String corpusTrainingPOST(@Context HttpServletRequest request) {
 
 		try {
-			//			CWSTagger.main(Utility.workingDirectory);
+			// CWSTagger.main(Utility.workingDirectory);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "{\"success\":\"false\"}";
@@ -1282,7 +1271,8 @@ public class Knowledge {
 				@Override
 				public void run() {
 					try {
-						QASystem.instance.getRepertoire(companyPk).insertQACouplet(question, answer, respondent, origin);
+						QASystem.instance.getRepertoire(companyPk).insertQACouplet(question, answer, respondent,
+								origin);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -1332,7 +1322,8 @@ public class Knowledge {
 				@Override
 				public void run() {
 					try {
-						QASystem.instance.getRepertoire(companyPk).updateQACouplet(oldQuestion, oldAnswer, newQuestion, newAnswer, respondent, origin);
+						QASystem.instance.getRepertoire(companyPk).updateQACouplet(oldQuestion, oldAnswer, newQuestion,
+								newAnswer, respondent, origin);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -1356,4 +1347,13 @@ public class Knowledge {
 	}
 
 	public static Logger log = Logger.getLogger(Knowledge.class);
+	static {
+		if (SystemUtils.IS_OS_WINDOWS) {
+			Utility.workingDirectory = "D:/360/solution/";
+		} else {
+		}
+		
+		log.info("Knowledge is initialized successfully!");
+	}
+
 }

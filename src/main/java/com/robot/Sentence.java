@@ -1,32 +1,26 @@
 package com.robot;
 
 import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.queryparser.flexible.core.parser.SyntaxParser;
 
+import com.deeplearning.CWSTagger;
 import com.robot.semantic.EditDistanceLevenshtein;
+import com.robot.semantic.Thesaurus;
 import com.robot.semantic.RNN.RNNParaphrase;
 import com.robot.semantic.RNN.RNNPhaticsClassifier;
 import com.robot.semantic.RNN.RNNQAClassifier;
-import com.util.Utility;
-import com.util.Utility.Printer;
+import com.robot.syntax.Constituent;
 import com.robot.syntax.POSTagger;
 import com.robot.syntax.SyntacticParser;
 import com.robot.syntax.SyntacticTree;
-import com.robot.semantic.Thesaurus;
-
-import com.robot.syntax.AnomalyInspecter;
-import com.robot.syntax.CWSTagger;
-import com.robot.syntax.Constituent;
+import com.util.Utility;
+import com.util.Utility.Printer;
 
 public class Sentence implements Serializable {
 
@@ -95,7 +89,7 @@ public class Sentence implements Serializable {
 		}
 
 		for (String str : new Utility.Text(Utility.workingDirectory + "CORPUS/seg.txt")) {
-			seg = CWSTagger.convertToSegmentation(str);
+			seg = Utility.convertToSegmentation(str);
 			pos = POSTagger.instance.tag(seg);
 			SyntacticTree tree = SyntacticParser.instance.parse(seg, pos);
 

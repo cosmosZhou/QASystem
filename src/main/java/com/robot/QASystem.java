@@ -21,7 +21,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.robot.Repertoire.AnsQuintuple;
 import com.robot.Sentence.Protagonist;
 import com.robot.DateBase.MySQL;
-import com.robot.semantic.SyntaxCoach;
 import com.util.Utility;
 import com.util.Utility.Couplet;
 import com.util.Utility.Timer;
@@ -76,7 +75,7 @@ public class QASystem {
 		return knowledgeBank.get(company_pk);
 	}
 
-	//创建一个缓冲池，缓冲池容量大小为Integer.MAX_VALUE
+	// 创建一个缓冲池，缓冲池容量大小为Integer.MAX_VALUE
 	ExecutorService executor = Executors.newCachedThreadPool();
 
 	public void execute(Runnable runnable) {
@@ -98,7 +97,8 @@ public class QASystem {
 		});
 	}
 
-	public void updateTeletext(final String company, final String pk, final String title, final String description, final String content) throws Exception {
+	public void updateTeletext(final String company, final String pk, final String title, final String description,
+			final String content) throws Exception {
 
 		execute(new Runnable() {
 			@Override
@@ -149,13 +149,17 @@ public class QASystem {
 				}
 				log.info("decision = " + decision);
 
-				MySQL.instance.reportQuery(js.getString("company_pk"), js.get("question").toString(), js.get("time").toString(), js.get("recommendedFAQ").toString(), js.get("selectedFAQ").toString(), decision);
+				MySQL.instance.reportQuery(js.getString("company_pk"), js.get("question").toString(),
+						js.get("time").toString(), js.get("recommendedFAQ").toString(),
+						js.get("selectedFAQ").toString(), decision);
 				return null;
 			}
 		}.execute();
 	}
 
-	static public void report(final String company_pk, final String question, final String actualAnswer, final String selectedAnswer, final String time, final String recommendedFAQ, final String selectedFAQ) throws Exception {
+	static public void report(final String company_pk, final String question, final String actualAnswer,
+			final String selectedAnswer, final String time, final String recommendedFAQ, final String selectedFAQ)
+			throws Exception {
 		MySQL.instance.new Invoker() {
 			@Override
 			protected Object invoke() throws Exception {
@@ -205,7 +209,8 @@ public class QASystem {
 		}.execute();
 	}
 
-	static public int report_utterly_selected(final String company_pk, final Date start, final Date end) throws Exception {
+	static public int report_utterly_selected(final String company_pk, final Date start, final Date end)
+			throws Exception {
 		return MySQL.instance.new Invoker<Integer>() {
 			@Override
 			protected Integer invoke() throws Exception {
@@ -214,7 +219,8 @@ public class QASystem {
 		}.execute();
 	}
 
-	static public int report_partially_selected(final String company_pk, final Date start, final Date end) throws Exception {
+	static public int report_partially_selected(final String company_pk, final Date start, final Date end)
+			throws Exception {
 		return MySQL.instance.new Invoker<Integer>() {
 			@Override
 			protected Integer invoke() throws Exception {
@@ -223,11 +229,13 @@ public class QASystem {
 		}.execute();
 	}
 
-	synchronized static public Couplet<String, int[]>[] report_top_concerns(String company_pk, int nBest, String start, String end) throws Exception {
+	synchronized static public Couplet<String, int[]>[] report_top_concerns(String company_pk, int nBest, String start,
+			String end) throws Exception {
 		return report_top_concerns(company_pk, nBest, Utility.parseDateFormat(start), Utility.parseDateFormat(end));
 	}
 
-	static public Couplet<String, int[]>[] report_top_concerns(final String company_pk, final int nBest, final Date start, final Date end) throws Exception {
+	static public Couplet<String, int[]>[] report_top_concerns(final String company_pk, final int nBest,
+			final Date start, final Date end) throws Exception {
 		return MySQL.instance.new Invoker<Couplet<String, int[]>[]>() {
 			@Override
 			protected Couplet<String, int[]>[] invoke() throws Exception {
@@ -242,7 +250,11 @@ public class QASystem {
 					MySQL.instance.executeBatchForReportQuery();
 				}
 
-				query = MySQL.instance.new Query("SELECT selected, (SELECT COUNT(*) FROM ecchatreportquery WHERE company_pk = '" + company_pk + "' and CONCAT(' ', recommended, ' ') like CONCAT('% ', t.selected, ' %')) as recommendedCnt, COUNT(company_pk) as selectedCnt FROM ecchatreportquery t WHERE company_pk = '" + company_pk + "' and selected is not null and time >= " + startTime + " and time <= " + endTime + " GROUP BY selected ORDER BY COUNT(company_pk) DESC");
+				query = MySQL.instance.new Query(
+						"SELECT selected, (SELECT COUNT(*) FROM ecchatreportquery WHERE company_pk = '" + company_pk
+								+ "' and CONCAT(' ', recommended, ' ') like CONCAT('% ', t.selected, ' %')) as recommendedCnt, COUNT(company_pk) as selectedCnt FROM ecchatreportquery t WHERE company_pk = '"
+								+ company_pk + "' and selected is not null and time >= " + startTime + " and time <= "
+								+ endTime + " GROUP BY selected ORDER BY COUNT(company_pk) DESC");
 				for (ResultSet res : query) {
 					if (tally >= nBest) {
 						query.close();
@@ -250,7 +262,8 @@ public class QASystem {
 					}
 
 					arr[tally] = new Couplet<String, int[]>();
-					arr[tally].x = instance.getRepertoire(company_pk).clusters.get(res.getInt("selected")).epitome().que.sentence;
+					arr[tally].x = instance.getRepertoire(company_pk).clusters.get(res.getInt("selected"))
+							.epitome().que.sentence;
 					arr[tally].y = new int[3];
 					arr[tally].y[0] = res.getInt("recommendedCnt");
 					arr[tally].y[1] = res.getInt("selectedCnt");
@@ -272,12 +285,14 @@ public class QASystem {
 		HOUR, DATE, MONTH, YEAR
 	}
 
-	synchronized static public Couplet<String, int[]>[] report(String company_pk, String start, String end, Period period) throws Exception {
+	synchronized static public Couplet<String, int[]>[] report(String company_pk, String start, String end,
+			Period period) throws Exception {
 		return report(company_pk, Utility.parseDateFormat(start), Utility.parseDateFormat(end), period);
 	}
 
 	@SuppressWarnings("deprecation")
-	static public Couplet<String, int[]>[] report(final String company_pk, final Date start, final Date end, final Period period) throws Exception {
+	static public Couplet<String, int[]>[] report(final String company_pk, final Date start, final Date end,
+			final Period period) throws Exception {
 		return MySQL.instance.new Invoker<Couplet<String, int[]>[]>() {
 			@Override
 			protected Couplet<String, int[]>[] invoke() throws Exception {
@@ -376,7 +391,8 @@ public class QASystem {
 					res[i].y[1] = MySQL.instance.report_recommended(company_pk, arr[i], arr[i + 1]);
 					res[i].y[2] = MySQL.instance.report_utterly_selected(company_pk, arr[i], arr[i + 1]);
 					res[i].y[3] = MySQL.instance.report_partially_selected(company_pk, arr[i], arr[i + 1]);
-					res[i].y[4] = MySQL.instance.report_faq_totality(company_pk, arr[i + 1]) - MySQL.instance.report_faq_totality(company_pk, arr[i]);
+					res[i].y[4] = MySQL.instance.report_faq_totality(company_pk, arr[i + 1])
+							- MySQL.instance.report_faq_totality(company_pk, arr[i]);
 				}
 
 				Utility.reverse(res);
@@ -441,7 +457,8 @@ public class QASystem {
 		return answer;
 	}
 
-	synchronized static public JSONArray report(String companyPk, String start, String end, String period) throws Exception {
+	synchronized static public JSONArray report(String companyPk, String start, String end, String period)
+			throws Exception {
 		JSONArray array = new JSONArray();
 		QASystem.Period periodEnum = null;
 		switch (period) {
@@ -476,20 +493,5 @@ public class QASystem {
 
 	public void updateFromMessageContent(String company) throws ParseException, Exception {
 		getRepertoire(company).updateFromMessageContent();
-	}
-	
-	public void learning() throws Exception {
-		execute(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					SyntaxCoach.learning();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		});
 	}
 }

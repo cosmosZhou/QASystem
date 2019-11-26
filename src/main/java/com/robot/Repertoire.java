@@ -646,7 +646,7 @@ public class Repertoire {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String regexPunctuation = "[" + Utility.Punctuation.replace("[", "\\[").replace("]", "\\]") + "]";
+	public static String regexPunctuation = "[" + Utility.sPunctuation.replace("[", "\\[").replace("]", "\\]") + "]";
 
 	public TreeSet<SearchResult> searchForQuestionByKeywords(String questionOriginal) throws Exception {
 		TreeSet<SearchResult> set = new TreeSet<SearchResult>();
