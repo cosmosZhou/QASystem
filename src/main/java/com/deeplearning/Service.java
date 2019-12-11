@@ -10,7 +10,7 @@ import org.jblas.DoubleMatrix;
 import com.deeplearning.rnn.Bidirectional.merge_mode;
 import com.deeplearning.rnn.BidirectionalGRU;
 import com.deeplearning.utils.Activator;
-import com.util.HttpClientWebApp;
+import com.util.HttpClientWebApp4NER;
 import com.util.MySQL;
 import com.util.Native;
 import com.util.Utility;
@@ -101,7 +101,7 @@ public class Service implements Serializable {
 		if (label.length != dense_pred.wDense.columns) {
 			HashMap<String, String> data = new HashMap<String, String>();
 			data.put("label", "true");
-			String json = HttpClientWebApp.instance.postMethod("_service", data);
+			String json = HttpClientWebApp4NER.instance.postMethod("_service", data);
 
 			label = Utility.dejsonify(json, String[].class);
 //			log.info(label);

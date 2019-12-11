@@ -15,7 +15,7 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 
-public class HttpClientWebApp {
+public class HttpClientWebApp4NER {
 //	HttpClient httpClient = new HttpClient();
 	HttpClient httpClient = new HttpClient(new MultiThreadedHttpConnectionManager());
 
@@ -41,7 +41,7 @@ public class HttpClientWebApp {
 		}
 	}
 
-	public HttpClientWebApp() {
+	public HttpClientWebApp4NER() {
 		httpClient.setConnectionTimeout(50000);
 		httpClient.setTimeout(50000);
 	}
@@ -261,11 +261,11 @@ public class HttpClientWebApp {
 		}
 	}
 
-	public static HttpClientWebApp instance;
+	public static HttpClientWebApp4NER instance;
 
 	static {
-		synchronized (HttpClientWebApp.class) {
-			instance = new HttpClientWebApp();
+		synchronized (HttpClientWebApp4NER.class) {
+			instance = new HttpClientWebApp4NER();
 		}
 	}
 
@@ -276,5 +276,5 @@ public class HttpClientWebApp {
 		instance.ner("播放一首寂寞沙洲冷", "music", "");
 	}
 
-	public static Logger log = Logger.getLogger(HttpClientWebApp.class);
+	public static Logger log = Logger.getLogger(HttpClientWebApp4NER.class);
 }

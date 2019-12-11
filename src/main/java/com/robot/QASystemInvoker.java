@@ -302,11 +302,11 @@ public class QASystemInvoker {
 	}
 
 	//  cd E:\360\solution\models
-	//	java -classpath .;E:\360\solution\QASystemInterface\WebContent\WEB-INF\lib\* com.robot.QASystemInvoker
+	//	java -classpath .;E:\360\solution\QASystem\WebContent\WEB-INF\lib\* com.robot.QASystemInvoker
 
 	//	 java -classpath 
-	//	/opt/ucc/apache-tomcat-7.0.47/webapps/QASystemInterface/WEB-INF/lib/QASystem.jar; 
-	//	/opt/ucc/apache-tomcat-7.0.47/webapps/QASystemInterface/WEB-INF/lib/Utility.jar
+	//	/opt/ucc/apache-tomcat-7.0.47/webapps/QASystem/WEB-INF/lib/QASystem.jar; 
+	//	/opt/ucc/apache-tomcat-7.0.47/webapps/QASystem/WEB-INF/lib/Utility.jar
 	//	com.robot.QASystemInvoker 
 	public static void main(String[] args) throws ParseException, Exception {
 		//		log.info("this is a message from the application.");

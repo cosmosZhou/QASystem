@@ -66,7 +66,7 @@ public class HttpClientWebApp {
 	}
 
 	String functionPathPrefix() {
-//		return server + "/QASystemInterface/resteasy/Knowledge/";
+//		return server + "/QASystem/resteasy/Knowledge/";
 		return server + "/QASystem/Knowledge/";
 	}
 
@@ -165,7 +165,7 @@ public class HttpClientWebApp {
 	}
 
 	public void update() throws UnsupportedEncodingException, FileNotFoundException, InterruptedException {
-		companyPk = "ff8080815ce312bf015ce318b0621111";
+//		companyPk = "ff8080815ce312bf015ce318b0621111";
 		// ff8080815ce312bf015ce318b0620002
 		// String regex = "INSERT INTO `ecchatrecords_copy` VALUES \\('([\\s\\S]+)',
 		// [\\S]+, [\\S]+\\);";
@@ -319,8 +319,8 @@ public class HttpClientWebApp {
 	}
 
 	public void search() {
-		companyPk = "ff808081622904140162625ffda403ac";
-		String question = "预算是多少";
+//		companyPk = "ff808081622904140162625ffda403ac";
+		String question = "周末你去哪里玩";
 		// 你的心情怎样啊
 		// companyPk = "2c9090f05b180ead015b18406dfe0009";
 		Parameter[] args = new Parameter[2];

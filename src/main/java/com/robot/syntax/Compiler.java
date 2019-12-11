@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import com.robot.Sentence;
-import com.robot.semantic.RNN.RNNParaphrase;
 import com.robot.syntax.Constituent.Coefficient;
 import com.util.Utility;
 
@@ -196,7 +195,6 @@ public class Compiler {
 				if (lexeme.contains(" ")) {
 					left = left.trim();
 					right = right.trim();
-					return RNNParaphrase.instance.equality(left, right);
 				} else {
 					return new ConstituentEquality(new ConstituentLeaf(left, null), new ConstituentLeaf(right, null));
 				}

@@ -2265,14 +2265,14 @@ public class Compiler {
 	public static void main(String[] args) throws Exception {
 				String classpath = Utility.workingDirectory + "Stanford/bin";		
 				String mainClass = "edu.stanford.nlp.wordseg.SegCoach";
-		String jarFolder = Utility.workingDirectory + "QASystemInterface/WebContent/WEB-INF/lib/";
+		String jarFolder = Utility.workingDirectory + "QASystem/WebContent/WEB-INF/lib/";
 //		String classpath = Utility.workingDirectory + "FudanNLP/bin";
 //		String mainClass = "edu.fudan.nlp.cn.tag.CWSTagger";
 
 		String jars[] = { "Utility.jar", "log4j-1.2.16", "poi-3.9", "poi-ooxml-3.9", "poi-ooxml-schemas-3.9", "trove" };
 		System.out.println(generate(classpath, jarFolder, mainClass, jars));
 
-		//		System.out.println(generate("/opt/ucc/apache-tomcat-7.0.47/webapps/QASystemInterface/WEB-INF/lib/", Utility.workingDirectory + "QASystemInterface/WebContent/WEB-INF/lib/", "com.robot.QASystemInvoker"));
+		//		System.out.println(generate("/opt/ucc/apache-tomcat-7.0.47/webapps/QASystem/WEB-INF/lib/", Utility.workingDirectory + "QASystem/WebContent/WEB-INF/lib/", "com.robot.QASystemInvoker"));
 		//		Utility.workingDirectory = "D:\\solution/";
 		//		String str = "1-1";
 		//		System.out.println("str = " + str);

@@ -27,7 +27,7 @@ import com.util.Utility.Couplet;
 
 /**
  * the way to invoke the method;
- * http://121.40.130.192:8080/QASystemInterface/resteasy/Knowledge/methodName?parameterName0=aaa&parameterName1=bbb
+ * http://121.40.130.192:8080/QASystem/resteasy/Knowledge/methodName?parameterName0=aaa&parameterName1=bbb
  * 
  * @author Cosmos
  *
@@ -814,7 +814,7 @@ public class Knowledge {
 			// = "
 			// + request.getSession().getServletContext().getRealPath("/"));
 			// workingDirectory = workingDirectory.substring(0,
-			// workingDirectory.length() - "/QASystemInterface/".length());
+			// workingDirectory.length() - "/QASystem/".length());
 			String workingDirectory = PropertyConfig.getProperty("pwd");
 			log.info("workingDirectory = " + workingDirectory);
 

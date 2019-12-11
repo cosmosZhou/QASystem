@@ -4,11 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.robot.Sentence;
 import com.robot.semantic.RNN.LabeledScoredTreeNode;
-import com.robot.semantic.RNN.RNNParaphrase;
-import com.robot.syntax.Constituent.Action;
-import com.robot.syntax.Constituent.Coefficient;
 import com.util.Utility;
 import com.util.Utility.LNodeShadow;
 
@@ -189,7 +185,7 @@ public class ConstituentLeaf extends Constituent {
 	public double similarity(ConstituentLeaf y) {
 		try {
 			LabeledScoredTreeNode t = new ConstituentEquality(this, y).toLabeledScoredTreeNode();
-			return RNNParaphrase.instance.classify(t);
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			//			e.printStackTrace();

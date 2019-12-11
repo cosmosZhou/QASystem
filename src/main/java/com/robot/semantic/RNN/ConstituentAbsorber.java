@@ -1,36 +1,22 @@
 package com.robot.semantic.RNN;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
-import org.apache.log4j.Logger;
-
 import com.robot.Sentence;
-import com.robot.semantic.Synonym;
-import com.robot.semantic.RNN.RNNParaphrase.EquationLeft;
-import com.robot.semantic.RNN.RNNParaphrase.EquationRight;
-import com.robot.semantic.RNN.RNNParaphrase.Struct;
 import com.robot.syntax.Constituent;
 import com.robot.syntax.Constituent.Action;
 import com.robot.syntax.ConstituentGradient;
 import com.robot.syntax.ConstituentGradientSingleton;
 import com.robot.syntax.ConstituentTree;
-import com.robot.syntax.SyntacticParser;
 import com.robot.syntax.SyntacticTree;
 import com.robot.syntax.SyntacticTree.BinarizedTree.Combination;
 import com.robot.util.InstanceReader;
 import com.util.Utility;
-import com.util.Utility.Printer;
 
 import edu.stanford.nlp.ling.CoreAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.trees.Tree;
 
@@ -82,14 +68,8 @@ public class ConstituentAbsorber {
 		System.out.println("difference = " + tree.score());
 		if (tree.label().containsKey(RNNCoreAnnotations.GoldScore.class)) {
 			double score = tree.label().get(RNNCoreAnnotations.GoldScore.class);
-			SyntacticTree xTree = tree.label().get(com.robot.semantic.RNN.RNNParaphrase.EquationLeft.class);
-			SyntacticTree yTree = tree.label().get(com.robot.semantic.RNN.RNNParaphrase.EquationRight.class);
-
-			System.out.println(xTree.toString());
-			System.out.println(yTree.toString());
 			System.out.println("gold score = " + score);
-			System.out.println("pred score = " + RNNCoreAnnotations.getPredictions(tree).get(1));
-			System.out.println(RNNParaphrase.instance.equality(xTree, yTree).toString());
+			System.out.println("pred score = " + RNNCoreAnnotations.getPredictions(tree).get(1));			
 		}
 	}
 
@@ -124,7 +104,6 @@ public class ConstituentAbsorber {
 		// TODO: do we want to iterate multiple times per batch?
 		double[] gradf = gcFunc.derivativeAtForPolarityClassification(theta);
 		double currCost = gcFunc.valueAt(theta);
-		log.info("batch cost: " + currCost);
 		for (int feature = 0; feature < gradf.length; feature++) {
 			if (gradf[feature] != gradf[feature]) {
 				continue;
@@ -135,7 +114,6 @@ public class ConstituentAbsorber {
 
 			if (theta[feature] != theta[feature]) {
 				theta[feature] = new Random().nextGaussian() * 0.1;
-				log.info("numeric overflow, reset theta[" + feature + "] = " + theta[feature]);
 			}
 		}
 
@@ -280,7 +258,6 @@ public class ConstituentAbsorber {
 		Constituent x = left.toConstituentTree();
 		Constituent y = right.toConstituentTree();
 		ConstituentGradientSingleton gradient = new ConstituentGradientSingleton();
-		Constituent _gold = x.equality(y, gradient, gold);
 
 		return gradient;
 	}
@@ -319,5 +296,4 @@ public class ConstituentAbsorber {
 		}
 	}
 
-	static Logger log = Logger.getLogger(RNNParaphrase.class);
 }

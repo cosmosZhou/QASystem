@@ -1,9 +1,5 @@
 package com.util;
 
-import java.lang.reflect.Field;
-
-import org.apache.commons.lang.SystemUtils;
-
 public class Native {
 	public native static void displayHelloWorld();
 
@@ -25,6 +21,14 @@ public class Native {
 	public native static int[] ner(String service, String text, int[] repertoire);
 
 	public native static double[][][] NER(String service, String text, int[] repertoire);
+
+	public native static double qatype(String text);
+	
+	public native static double phatics(String text);
+	
+	public native static double similarity(String x, String y);
+
+	public native static double[] batch_similarity(String[] x, String[] y);
 
 	public native static int asm6args(int rcx, int rdx, int r8, int r9, int fifthArg, int sixthArg);
 
@@ -69,7 +73,8 @@ public class Native {
 		System.out.println("x = " + x);
 		System.out.println("relu(x) = " + relu(x));
 
-		System.out.println("gcdlong(-10011001100110011001100110011001, -1171171171171171179) = " + gcdlong(-10011001, -117));
+		System.out.println(
+				"gcdlong(-10011001100110011001100110011001, -1171171171171171179) = " + gcdlong(-10011001, -117));
 		Utility.Timer timer = new Utility.Timer();
 		long a = -1001100118999999999l, b = -1171171171888888888l;
 		int size = 10000000;
@@ -85,7 +90,7 @@ public class Native {
 			gcdlongtemplate(a, b);
 		}
 		timer.report();
-		
+
 		int _a = -1001100118, _b = -1171171171;
 		System.out.println("gcdint(-10011001, -117) = " + gcdint(-10011001, -117));
 		timer.start();
@@ -100,6 +105,6 @@ public class Native {
 			gcdinttemplate(_a, _b);
 		}
 		timer.report();
-		
+
 	}
 }

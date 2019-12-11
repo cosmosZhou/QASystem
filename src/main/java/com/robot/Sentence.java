@@ -12,13 +12,11 @@ import org.apache.log4j.Logger;
 import com.deeplearning.CWSTagger;
 import com.robot.semantic.EditDistanceLevenshtein;
 import com.robot.semantic.Thesaurus;
-import com.robot.semantic.RNN.RNNParaphrase;
-import com.robot.semantic.RNN.RNNPhaticsClassifier;
-import com.robot.semantic.RNN.RNNQAClassifier;
 import com.robot.syntax.Constituent;
 import com.robot.syntax.POSTagger;
 import com.robot.syntax.SyntacticParser;
 import com.robot.syntax.SyntacticTree;
+import com.util.Native;
 import com.util.Utility;
 import com.util.Utility.Printer;
 
@@ -54,7 +52,6 @@ public class Sentence implements Serializable {
 
 	public static void main(String[] args) throws Exception {
 		Printer printer = new Printer(Utility.workingDirectory + "/corpus/debug.txt");
-		int error = 0;
 		String seg[] = null;
 		String pos[] = null;
 		for (String inst : new Utility.Text(Utility.workingDirectory + "CORPUS/pos.txt")) {
@@ -81,7 +78,6 @@ public class Sentence implements Serializable {
 					//					System.out.println(tree);
 					System.out.println(tree.toStringNonHierarchical());
 				} else {
-					error++;
 				}
 				seg = null;
 				pos = null;
@@ -101,7 +97,6 @@ public class Sentence implements Serializable {
 				//				System.out.println(tree);
 				System.out.println(tree.toStringNonHierarchical());
 			} else {
-				error++;
 			}
 		}
 
@@ -290,13 +285,13 @@ public class Sentence implements Serializable {
 
 	public QATYPE qatype() throws Exception {
 		if (qatype == null) {
-			double score = RNNPhaticsClassifier.instance.classify(this.tree());
-			if (score < RNNPhaticsClassifier.threshold) {
+			double score = Native.phatics(sentence);
+			if (score < 0.5) {
 				qatype = QATYPE.NEUTRAL;
 				this.confidence = 1 - score;
 			} else {//score >= RNNPhaticsClassifier.threshold
-				this.confidence = RNNQAClassifier.instance.classify(tree());
-				if (confidence > RNNQAClassifier.threshold) {
+				this.confidence = Native.phatics(this.sentence);
+				if (confidence > 0.5) {
 					qatype = QATYPE.QUERY;
 					confidence = Math.sqrt(score * confidence);
 				} else {//if (confidence <= 0.5) {
@@ -600,8 +595,8 @@ public class Sentence implements Serializable {
 
 	public double questionSimilarity(Sentence sentence) throws Exception {
 		double semanticSimilarity;
-		try {
-			semanticSimilarity = RNNParaphrase.instance.similarity(this, sentence);
+		try {			
+			semanticSimilarity = Native.similarity(this.sentence, sentence.sentence);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -646,8 +641,6 @@ public class Sentence implements Serializable {
 		}
 		return INDEX_INTEGRITY;
 	}
-
-	private static Logger log = Logger.getLogger(Sentence.class);
 
 	static int find_question_sequential(Sentence[] history, int i) {
 		for (; i < history.length; ++i) {
@@ -913,11 +906,6 @@ public class Sentence implements Serializable {
 			return null;
 		}
 
-	}
-
-	public boolean interrogativeExtractionRNN(int j) throws Exception {
-		double probability = RNNQAClassifier.instance.classify(dep[j]);
-		return probability > 0.5;
 	}
 
 	public Sentence[] splitSentence() {
