@@ -49,7 +49,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.robot.QACouplet.Origin;
 import com.robot.Sentence.Protagonist;
 import com.robot.Sentence.QATYPE;
-import com.robot.DateBase.MySQL;
+import com.util.MySQL;
 import com.util.Utility;
 import com.util.Utility.Couplet;
 import com.util.Utility.PriorityQueue;
@@ -62,12 +62,13 @@ public class Repertoire {
 
 	Repertoire(final String company_pk) throws Exception {
 		this.company_pk = company_pk;
-		this.companyName = company_name();		
+		this.companyName = company_name();
 		synchronized (this) {
 			MySQL.instance.new Invoker<Object>() {
 				@Override
 				protected Object invoke() throws Exception {
-					for (ResultSet res : MySQL.instance.new Query("select DISTINCT(FAQID) from ecchatfaqcorpus where company_pk = '" + company_pk + "'")) {
+					for (ResultSet res : MySQL.instance.new Query(
+							"select DISTINCT(FAQID) from ecchatfaqcorpus where company_pk = '" + company_pk + "'")) {
 						int id = res.getInt("FAQID");
 						keyGenerator.register_key(id);
 						clusters.put(id, null);
@@ -78,7 +79,7 @@ public class Repertoire {
 		}
 
 		threshold = this.threshold();
-		
+
 		if (!"00000000000000000000000000000000".equals(company_pk)) {
 			deletePhatics();
 			saveToSQL();
@@ -123,12 +124,16 @@ public class Repertoire {
 				@Override
 				protected FAQ invoke() throws Exception {
 					FAQ faq = new FAQ(id);
-					for (ResultSet res : MySQL.instance.new Query("select * from ecchatfaqcorpus where company_pk = '" + company_pk + "' and faqid = " + id)) {
+					for (ResultSet res : MySQL.instance.new Query("select * from ecchatfaqcorpus where company_pk = '"
+							+ company_pk + "' and faqid = " + id)) {
 						try {
 							String question = res.getString("question");
 							String answer = res.getString("answer");
 
-							QACouplet qa = new QACouplet(new Sentence(question, Protagonist.CUSTOMER), new Sentence(answer, Protagonist.OPERATOR), res.getDouble("coherence"), res.getTimestamp("time"), res.getString("respondent"), QACouplet.parseIntToOrigin(res.getInt("origin")));
+							QACouplet qa = new QACouplet(new Sentence(question, Protagonist.CUSTOMER),
+									new Sentence(answer, Protagonist.OPERATOR), res.getDouble("coherence"),
+									res.getTimestamp("time"), res.getString("respondent"),
+									QACouplet.parseIntToOrigin(res.getInt("origin")));
 
 							log.info("loading faqid = " + id + "\n" + qa);
 							faq.add(qa);
@@ -176,7 +181,7 @@ public class Repertoire {
 		FSDirectory dir = FSDirectory.open(indexDir);
 
 		IndexWriter indexWriter = new IndexWriter(dir, iwc);
-		//		indexWriter.commit();
+		// indexWriter.commit();
 		// log.info(dir + "created successfully");
 		try {
 			// add document to the indexer
@@ -311,9 +316,9 @@ public class Repertoire {
 		update(new Conversation(content));
 	}
 
-	//procedure for knowledge updating
+	// procedure for knowledge updating
 	public void update(ArrayList<QACouplet> array) throws Exception {
-		//remove redundant pairs
+		// remove redundant pairs
 		HashSet<QACouplet> set = new HashSet<QACouplet>();
 		for (int i = array.size() - 1; i >= 0; --i) {
 			QACouplet qa = array.get(i);
@@ -357,14 +362,14 @@ public class Repertoire {
 				KruskalAgglomerativeClustering(clusters.get(key));
 			}
 
-			//		for (QACouplet qa : array) {
-			//			try {
-			//				semanticOntology(qa);
-			//			} catch (Exception e) {
-			//				log.info(e.getMessage());
-			//				// e.printStackTrace();
-			//			}
-			//		}
+			// for (QACouplet qa : array) {
+			// try {
+			// semanticOntology(qa);
+			// } catch (Exception e) {
+			// log.info(e.getMessage());
+			// // e.printStackTrace();
+			// }
+			// }
 
 			saveToSQL();
 			createKeywordInvertedIndexer();
@@ -375,8 +380,8 @@ public class Repertoire {
 	}
 
 	/**
-	 * Kruskal is a greedy algorithm for finding the minimum spanning tree.
-	 * perform Agglomerative Clutering
+	 * Kruskal is a greedy algorithm for finding the minimum spanning tree. perform
+	 * Agglomerative Clutering
 	 * 
 	 * @param qACouplet
 	 * @throws Exception
@@ -518,7 +523,8 @@ public class Repertoire {
 				double threshold;
 				MySQL.Query query;
 
-				String sql = "select threshold from ecoperatorbasicsettings where companypk = " + "\'" + company_pk + "\'";
+				String sql = "select threshold from ecoperatorbasicsettings where companypk = " + "\'" + company_pk
+						+ "\'";
 				query = MySQL.instance.new Query(sql);
 				// log.info("sql = " + sql);
 				if (query.hasNext()) {
@@ -566,7 +572,8 @@ public class Repertoire {
 		MySQL.instance.new Invoker() {
 			@Override
 			protected Object invoke() throws Exception {
-				String sql = "update ecoperatorbasicsettings threshold = " + threshold * 100 + " where companypk = " + "\'" + company_pk + "\'";
+				String sql = "update ecoperatorbasicsettings threshold = " + threshold * 100 + " where companypk = "
+						+ "\'" + company_pk + "\'";
 				MySQL.instance.execute(sql);
 				// log.info("reading time interval for threshold ");
 				// timer.cease();
@@ -603,8 +610,9 @@ public class Repertoire {
 	}
 
 	static double average(double retrievalScore, double similarity, double coherence) {
-		double confidence = 0.1 * retrievalScore * retrievalScore + 0.4 * coherence * coherence + 0.5 * similarity * similarity;
-		confidence = Math.sqrt(confidence);		
+		double confidence = 0.1 * retrievalScore * retrievalScore + 0.4 * coherence * coherence
+				+ 0.5 * similarity * similarity;
+		confidence = Math.sqrt(confidence);
 		return confidence;
 	}
 
@@ -641,8 +649,7 @@ public class Repertoire {
 
 	/**
 	 * 
-	 * @param questionOriginal
-	 *            = the keyword to search for
+	 * @param questionOriginal = the keyword to search for
 	 * @return
 	 * @throws Exception
 	 */
@@ -730,8 +737,6 @@ public class Repertoire {
 		timer.report();
 
 		log.info("recommended FAQs: " + Utility.toString(arr));
-	
-		log.info("syntactic tree = \n" + sentence.tree());
 
 		log.info("time span for Sentence analysis ");
 		timer.report();
@@ -754,7 +759,7 @@ public class Repertoire {
 			}
 
 			for (QACouplet qACouplet : faq) {
-				double similarity = qACouplet.que.questionSimilarity(sentence);
+				double similarity = qACouplet.que.similarity(sentence);
 				if (similarity > confidence) {
 					confidence = similarity;
 				}
@@ -778,11 +783,11 @@ public class Repertoire {
 		timer.report();
 
 		return answer;
-		//		if (answer != null) {
-		//			return answer;
-		//		}
+		// if (answer != null) {
+		// return answer;
+		// }
 		//
-		//		return performLogicalAnalysis(sentence);
+		// return performLogicalAnalysis(sentence);
 	}
 
 	/**
@@ -800,8 +805,6 @@ public class Repertoire {
 		// log.info("time span for getRecommendedFAQ ");
 		// timer.cease();
 		// timer.start();
-
-		log.info("syntactic tree = \n" + sentence.tree());
 		// log.info("time span for Sentence analysis ");
 		// timer.cease();
 		// timer.start();
@@ -817,7 +820,7 @@ public class Repertoire {
 			}
 
 			for (QACouplet qACouplet : faq) {
-				double similarity = qACouplet.que.questionSimilarity(sentence);
+				double similarity = qACouplet.que.similarity(sentence);
 				log.info("analyzing database question = " + qACouplet.que);
 				log.info("analyzing database answer   = " + qACouplet.ans);
 
@@ -838,19 +841,19 @@ public class Repertoire {
 			return answerList.get(index);
 		}
 		return null;
-		//		return performLogicalAnalysis(sentence);
+		// return performLogicalAnalysis(sentence);
 	}
 
 	final static int maxRecommendation = 5;
 
 	public ArrayList<Couplet<String, Float>> searchTeletext(final String questionOriginal) throws Exception {
-		//		Timer timer = new Timer();
-		//		log.info("questionOriginal = " + questionOriginal);
+		// Timer timer = new Timer();
+		// log.info("questionOriginal = " + questionOriginal);
 		final String question = Conversation.format(questionOriginal);
 		if (question == null)
 			return new ArrayList<Couplet<String, Float>>();
 
-		//		log.info("question = " + question);
+		// log.info("question = " + question);
 		// this.print();
 		ArrayList<Couplet<String, Float>> arr = getRecommendedFAQTeletext(question, 5);
 		log.info("recommended FAQs: " + Utility.toString(arr));
@@ -867,20 +870,19 @@ public class Repertoire {
 	 */
 	public ArrayList<AnsQuintuple> query(final String questionOriginal) throws Exception {
 		Timer timer = new Timer();
-		//		log.info("questionOriginal = " + questionOriginal);
+		// log.info("questionOriginal = " + questionOriginal);
 		ArrayList<AnsQuintuple> res = new ArrayList<AnsQuintuple>();
 		final String question = Conversation.format(questionOriginal);
 		if (question == null)
 			return res;
 
-		//		log.info("question = " + question);
+		// log.info("question = " + question);
 		// this.print();
 		ArrayList<Utility.Couplet<Integer, Float>> arr = getRecommendedFAQ(question, 5);
 		log.info("recommended FAQs: " + Utility.toString(arr));
 
 		Sentence sentence = new Sentence(question, Protagonist.CUSTOMER);
 
-		log.info("syntactic tree = \n" + sentence.tree());
 //		log.info("semantic vector = \n" + sentence.interrogativeStruct());
 
 		DecimalFormat df = new DecimalFormat("0.000");
@@ -907,9 +909,10 @@ public class Repertoire {
 				if (++maxIteration > maxRecommendation)
 					break;
 
-				log.info(df.format(qACouplet.frequency) + "\t\t......fortnight(s) half life of decay as for faq = " + faq.id);
+				log.info(df.format(qACouplet.frequency) + "\t\t......fortnight(s) half life of decay as for faq = "
+						+ faq.id);
 
-				double similarity = qACouplet.que.questionSimilarity(sentence);
+				double similarity = qACouplet.que.similarity(sentence);
 				double efficacy = qACouplet.efficacy(newest);
 				double confidence = average(score, similarity, qACouplet.coherence) * efficacy;
 				if (confidence < threshold)
@@ -923,7 +926,8 @@ public class Repertoire {
 				log.info(df.format(efficacy) + "\t\t......efficacy with respect to time");
 				log.info(df.format(confidence) + "\t\t......confidence in the final analysis\n\n");
 
-				priorityQueue.add(new AnsQuintuple(qACouplet.ans, faq.id, confidence, qACouplet.origin, qACouplet.respondent));
+				priorityQueue.add(
+						new AnsQuintuple(qACouplet.ans, faq.id, confidence, qACouplet.origin, qACouplet.respondent));
 			}
 		}
 
@@ -956,25 +960,26 @@ public class Repertoire {
 			log.info(df.format(t.confidence) + "\t\t......" + t.answer);
 		}
 
-		//		for (int i = 0; i < res.size(); ++i) {
-		//			int J = -1;
-		//			for (int j = i + 1; j < res.size(); ++j) {
-		//				double answerSimilarity = res.get(i).answer.answerSimilarity(res.get(j).answer);
-		//				if (answerSimilarity >= 0.6) {
-		//					J = j;
-		//					break;
-		//				}
-		//			}
+		// for (int i = 0; i < res.size(); ++i) {
+		// int J = -1;
+		// for (int j = i + 1; j < res.size(); ++j) {
+		// double answerSimilarity =
+		// res.get(i).answer.answerSimilarity(res.get(j).answer);
+		// if (answerSimilarity >= 0.6) {
+		// J = j;
+		// break;
+		// }
+		// }
 		//
-		//			if (J >= i + 2) {
-		//				int j = i + 1;
-		//				for (; j < J; ++j) {
-		//					res.get(j).confidence = res.get(j + 1).confidence;
-		//				}
-		//				res.get(j).confidence = res.get(i + 1).confidence;
-		//				res.add(i + 1, res.remove(J));
-		//			}
-		//		}
+		// if (J >= i + 2) {
+		// int j = i + 1;
+		// for (; j < J; ++j) {
+		// res.get(j).confidence = res.get(j + 1).confidence;
+		// }
+		// res.get(j).confidence = res.get(i + 1).confidence;
+		// res.add(i + 1, res.remove(J));
+		// }
+		// }
 		//
 		log.info("time span for search analysis ");
 		timer.report();
@@ -1049,7 +1054,7 @@ public class Repertoire {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			log.info("Exception caught in getRecommendedFAQ when parsing " + question);
-			//			e.printStackTrace();
+			// e.printStackTrace();
 			return list;
 		}
 
@@ -1075,7 +1080,8 @@ public class Repertoire {
 		return list;
 	}
 
-	public ArrayList<Utility.Couplet<String, Float>> getRecommendedFAQTeletext(String question, int nBest) throws IOException {
+	public ArrayList<Utility.Couplet<String, Float>> getRecommendedFAQTeletext(String question, int nBest)
+			throws IOException {
 
 		ArrayList<Utility.Couplet<String, Float>> list = new ArrayList<Utility.Couplet<String, Float>>();
 		IndexSearcher searcher = searcherTeletext();
@@ -1088,7 +1094,7 @@ public class Repertoire {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			log.info("Exception caught in getRecommendedFAQTeletext when parsing " + question);
-			//			e.printStackTrace();
+			// e.printStackTrace();
 			return list;
 		}
 
@@ -1125,14 +1131,15 @@ public class Repertoire {
 		/**
 		 * apache的StringEscapeUtils进行转义
 		 */
-		//&lt;a href='http://www.qq.com'&gt;QQ&lt;/a&gt;&lt;script&gt;
+		// &lt;a href='http://www.qq.com'&gt;QQ&lt;/a&gt;&lt;script&gt;
 		System.out.println(org.apache.commons.lang.StringEscapeUtils.escapeHtml(str));
 
 		/**
 		 * apache的StringEscapeUtils进行还原
 		 */
-		//<a href='http://www.qq.com'>QQ</a><script>
-		System.out.println(org.apache.commons.lang.StringEscapeUtils.unescapeHtml("&lt;a href='http://www.qq.com'&gt;QQ&lt;/a&gt;&lt;script&gt;"));
+		// <a href='http://www.qq.com'>QQ</a><script>
+		System.out.println(org.apache.commons.lang.StringEscapeUtils
+				.unescapeHtml("&lt;a href='http://www.qq.com'&gt;QQ&lt;/a&gt;&lt;script&gt;"));
 	}
 
 	public static Logger log = Logger.getLogger(Repertoire.class);
@@ -1151,7 +1158,9 @@ public class Repertoire {
 			@Override
 			protected ArrayList<QACouplet> invoke() throws Exception {
 				ArrayList<QACouplet> arr = new ArrayList<QACouplet>();
-				for (ResultSet res : MySQL.instance.new Query("select content, title, storetype, inserttime, updatetime, operatorpk from eccommonstored where storefiletype = 1 and isdelete = 0 and companypk = '" + company_pk + "'")) {
+				for (ResultSet res : MySQL.instance.new Query(
+						"select content, title, storetype, inserttime, updatetime, operatorpk from eccommonstored where storefiletype = 1 and isdelete = 0 and companypk = '"
+								+ company_pk + "'")) {
 					Date time = res.getDate("updatetime");
 					if (time == null) {
 						time = res.getDate("inserttime");
@@ -1160,7 +1169,8 @@ public class Repertoire {
 					Origin origin = QACouplet.parseIntToOrigin(res.getInt("storetype"));
 					String respondent = null;
 					if (origin == Origin.INDIVIDUAL_RESERVOIR) {
-						for (ResultSet result : MySQL.instance.new Query("SELECT USERNAME FROM ecoperator where PK = '" + res.getString("operatorpk") + "'")) {
+						for (ResultSet result : MySQL.instance.new Query(
+								"SELECT USERNAME FROM ecoperator where PK = '" + res.getString("operatorpk") + "'")) {
 							respondent = result.getString("USERNAME").split("-")[1];
 						}
 
@@ -1170,7 +1180,8 @@ public class Repertoire {
 						// throw new Exception("respondent == null");
 					}
 
-					arr.add(new QACouplet(res.getString("title"), res.getString("content"), 1.0, time, respondent, origin));
+					arr.add(new QACouplet(res.getString("title"), res.getString("content"), 1.0, time, respondent,
+							origin));
 				}
 				return arr;
 			}
@@ -1195,7 +1206,8 @@ public class Repertoire {
 		update(arr);
 	}
 
-	public void updateQACouplet(String oldQuestion, String oldAnswer, String newQuestion, String newAnswer, String respondent, int origin) throws Exception {
+	public void updateQACouplet(String oldQuestion, String oldAnswer, String newQuestion, String newAnswer,
+			String respondent, int origin) throws Exception {
 		deleteEntity(oldQuestion, oldAnswer);
 		insertQACouplet(newQuestion, newAnswer, respondent, origin);
 	}
@@ -1350,7 +1362,8 @@ public class Repertoire {
 					continue;
 				}
 
-				if (criteria == null || epitome.que.sentence.contains(criteria) || epitome.ans.sentence.contains(criteria)) {
+				if (criteria == null || epitome.que.sentence.contains(criteria)
+						|| epitome.ans.sentence.contains(criteria)) {
 					pq.add(epitome);
 				}
 			}
@@ -1386,7 +1399,8 @@ public class Repertoire {
 				QACouplet epitome = faq.epitome();
 				if (epitome == null || epitome.origin != Origin.ROBOT_RESERVOIR)
 					continue;
-				if (criteria == null || epitome.que.sentence.contains(criteria) || epitome.ans.sentence.contains(criteria)) {
+				if (criteria == null || epitome.que.sentence.contains(criteria)
+						|| epitome.ans.sentence.contains(criteria)) {
 					pq.add(epitome);
 				}
 			}
@@ -1470,7 +1484,9 @@ public class Repertoire {
 				row.createCell(column++).setCellValue("自然问");
 				row.createCell(column++).setCellValue("自然答");
 
-				for (ResultSet res : MySQL.instance.new Query("select question from ecchatreportunknownquestion WHERE company_pk = '" + company_pk + "' ORDER BY time")) {
+				for (ResultSet res : MySQL.instance.new Query(
+						"select question from ecchatreportunknownquestion WHERE company_pk = '" + company_pk
+								+ "' ORDER BY time")) {
 					String question = res.getString("question");
 					if (!set.contains(question)) {
 						row = sheet.createRow(rownum++);
@@ -1502,7 +1518,9 @@ public class Repertoire {
 					log.info("isBatchInProcess error.");
 				}
 
-				for (ResultSet res : MySQL.instance.new Query("select question from ecchatreportunknownquestion WHERE company_pk = '" + company_pk + "' ORDER BY time")) {
+				for (ResultSet res : MySQL.instance.new Query(
+						"select question from ecchatreportunknownquestion WHERE company_pk = '" + company_pk
+								+ "' ORDER BY time")) {
 
 					String question = res.getString("question");
 					if (set.contains(question))
@@ -1567,7 +1585,8 @@ public class Repertoire {
 
 			@Override
 			protected Object invoke() throws Exception {
-				MySQL.instance.execute("delete from ecchatreportunknownquestion where company_pk ='" + company_pk + "'");
+				MySQL.instance
+						.execute("delete from ecchatreportunknownquestion where company_pk ='" + company_pk + "'");
 
 				return null;
 			}
@@ -1601,7 +1620,8 @@ public class Repertoire {
 
 			@Override
 			protected Object invoke() throws Exception {
-				MySQL.instance.execute("delete from ecchatreportunknownquestion where company_pk ='" + company_pk + "' and question = '" + question + "'");
+				MySQL.instance.execute("delete from ecchatreportunknownquestion where company_pk ='" + company_pk
+						+ "' and question = '" + question + "'");
 
 				return null;
 			}
@@ -1702,7 +1722,8 @@ public class Repertoire {
 		return res.toArray(new String[res.size()][]);
 	}
 
-	public LikeEntity checkValidityForSupervisedInsertion(String question, String answer, String exceptQuestion) throws Exception {
+	public LikeEntity checkValidityForSupervisedInsertion(String question, String answer, String exceptQuestion)
+			throws Exception {
 		log.info("checking Validity For Insertion (old question and answer excluded): ");
 		log.info("question = " + question);
 		log.info("answer = " + answer);
@@ -1763,20 +1784,21 @@ public class Repertoire {
 		log.info("answer = " + answer);
 
 		for (int i = 0; i < question.length; ++i) {
-			QACouplet couplet = new QACouplet(question[i], answer[i], 1, new Date(), respondent, Origin.SUPERVISOR_RESERVOIR);
+			QACouplet couplet = new QACouplet(question[i], answer[i], 1, new Date(), respondent,
+					Origin.SUPERVISOR_RESERVOIR);
 			array.add(couplet);
 		}
 
 		update(array);
 	}
 
-	//	consider the case for the ampersand & in the format "&amp;"
-	//	" = "&quot;"
-	//	& = "&amp;"
-	//	< = "&lt;"
-	//	> = "&gt;"
-	//	non-breaking space = "&nbsp;"
-	//	see reference http://tool.oschina.net/commons?type=2
+	// consider the case for the ampersand & in the format "&amp;"
+	// " = "&quot;"
+	// & = "&amp;"
+	// < = "&lt;"
+	// > = "&gt;"
+	// non-breaking space = "&nbsp;"
+	// see reference http://tool.oschina.net/commons?type=2
 	public boolean deleteEntity(String question, String answer) throws Exception {
 		synchronized (clusters) {
 			for (Map.Entry<Integer, FAQ> entry : this.clusters.entrySet()) {
@@ -1786,7 +1808,7 @@ public class Repertoire {
 
 					if (couplet.que.sentence.equals(question) && couplet.ans.sentence.equals(answer)) {
 						faq.remove(i);
-						//						faq.clear();
+						// faq.clear();
 						faq.isChanged = true;
 						return true;
 					}
@@ -1937,7 +1959,8 @@ public class Repertoire {
 	}
 
 	public void updateFromMessageContent() throws SQLException, InterruptedException, Exception {
-		String sql = "select msg_content from ecchatrecords WHERE company_pk = '" + company_pk + "' and msg_content is not null and msg_content != '' order by chat_start_time desc";
+		final String sql = "select msg_content from ecchatrecords WHERE company_pk = '" + company_pk
+				+ "' and msg_content is not null and msg_content != '' order by chat_start_time desc";
 		log.info("sql: \n" + sql);
 
 		MySQL.instance.new Invoker<Object>() {

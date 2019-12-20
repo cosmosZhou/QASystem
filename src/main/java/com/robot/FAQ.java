@@ -52,7 +52,7 @@ public class FAQ extends ArrayList<QACouplet> {
 					} else
 						similarity = 1;
 				} else {
-					similarity = coupletOld.ans.answerSimilarity(coupletNew.ans);
+					similarity = coupletOld.ans.similarity(coupletNew.ans);
 				}
 				coupletOld.improve_confidence(similarity);
 			}

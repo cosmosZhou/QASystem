@@ -3,14 +3,22 @@ package com.util;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
+import org.ini4j.ConfigParser.InterpolationException;
+import org.ini4j.ConfigParser.NoOptionException;
+import org.ini4j.ConfigParser.NoSectionException;
 
+import com.robot.FAQ;
+import com.robot.QACouplet;
+import com.robot.QACouplet.Origin;
+import com.util.Utility.Couplet;
+//27.115.49.154  root  clienT1!    数据库端口：8806  数据库comos
 public class MySQL extends DataSource {
 	private static Logger log = Logger.getLogger(MySQL.class);
 
@@ -18,21 +26,46 @@ public class MySQL extends DataSource {
 
 	static {
 		synchronized (MySQL.class) {
-//		String url = "jdbc:mysql://192.168.2.39:3306/corpus?";
-			String url = "jdbc:mysql://localhost:3306/corpus?";
-			String user = "root";
-//		
+			try {
+				String section = "mysql";
 
-			if (SystemUtils.IS_OS_WINDOWS) {
-				String serverTimezone = "UTC";
-				String password = "123456";
-//			String serverTimezone = "GMT";
-				instance = static_construct(url, user, password, serverTimezone);
-			} else {
-				String password = "";
-				instance = static_construct(url, user, password);
+				String host = PropertyConfig.config.get(section, "host");
+
+				String port;
+				if (PropertyConfig.config.hasOption(section, "port")) {
+					port = PropertyConfig.config.get(section, "port");	
+				}
+				else {
+					port = "3306";
+				}
+				
+
+				String url;
+				if (PropertyConfig.config.hasOption(section, "database")) {
+					String database = PropertyConfig.config.get(section, "database");
+					url = String.format("jdbc:mysql://%s:%s/%s?", host, port, database);
+
+				} else {
+					url = String.format("jdbc:mysql://%s:%s?", host, port);
+				}
+				String user = PropertyConfig.config.get(section, "user");
+				String password = PropertyConfig.config.get(section, "password");
+				if (SystemUtils.IS_OS_WINDOWS) {
+					String serverTimezone = "UTC";
+//				String serverTimezone = "GMT";
+					instance = static_construct(url, user, password, serverTimezone);
+				} else {
+					instance = static_construct(url, user, password);
+				}
+			} catch (NoSectionException | NoOptionException | InterpolationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
+	}
+
+	static MySQL static_construct(String url, String user, String password, String serverTimezone) {
+		return new MySQL(url, user, password, serverTimezone);
 	}
 
 	static MySQL static_construct(String url, String user, String password) {
@@ -43,15 +76,6 @@ public class MySQL extends DataSource {
 		return new MySQL(url, user, password);
 	}
 
-	static MySQL static_construct(String url, String user, String password, String serverTimezone) {
-		return new MySQL(url, user, password, serverTimezone);
-	}
-
-	static MySQL static_construct() {
-		return static_construct(PropertyConfig.getProperty("url"), PropertyConfig.getProperty("user"),
-				PropertyConfig.getProperty("password"));
-	}
-
 	public MySQL(String url, String user, String password) {
 		super(url, user, password, Driver.mysql);
 	}
@@ -60,37 +84,24 @@ public class MySQL extends DataSource {
 		super(url, user, password, Driver.mysql, serverTimezone);
 	}
 
-	public void selectDialogClassificationLabel(String topicPK, ArrayList<String> nameList) throws SQLException {
-
-		String parentpk = null;
-		String name = null;
-		String pk = topicPK;
-		do {
-			for (ResultSet res : new Query("select name, parentpk from ectopic WHERE pk = '" + pk + "'")) {
-				parentpk = res.getString("parentpk");
-				name = res.getString("name");
-			}
-			// if (name == null || parentpk == null)
-			// break;
-			if (parentpk == null)
-				break;
-
-			// topicArr.add(pk);
-			nameList.add(name);
-			pk = parentpk;
-		} while (!"-1".equals(pk));
-
-		// if (topicArr.isEmpty())
-		// return;
-
-		// Collections.reverse(topicArr);
-		Collections.reverse(nameList);
+	// of format : dddd-dd-dd
+	public ArrayList<String> select(String company_pk, Date date) throws SQLException {
+		return select(company_pk, new Date(date.getTime() - 86399 * 1000), date);
 	}
 
-	public void selectDialogClassification(String pkDialog, ArrayList<String> arr) throws SQLException {
+	public ArrayList<String> select(String company_pk, String strDate) throws SQLException, ParseException {
+		Date date = Utility.parseDateFormat(strDate + " 00:00:00");
+		return select(company_pk, new Date(date.getTime() - 86400 * 1000), date);
+	}
 
-		String sql = "select msg_content from ecchatrecords WHERE pk = '" + pkDialog + "'";
+	// of format : dddd-dd-dd
+	public ArrayList<String> select(String company_pk, Date startDate, Date endDate) throws SQLException {
+		String start = '\'' + Utility.toString(startDate) + '\'';
+		String end = '\'' + Utility.toString(endDate) + '\'';
+		ArrayList<String> arr = new ArrayList<String>();
 
+		String sql = "select msg_content from ecchatrecords WHERE company_pk = " + "\'" + company_pk + "\'"
+				+ " and msg_content is not null and msg_content != '' and insert_time BETWEEN " + start + " AND " + end;
 		log.info("sql: \n" + sql);
 
 		for (ResultSet result : new Query(sql)) {
@@ -98,80 +109,92 @@ public class MySQL extends DataSource {
 			log.info("content: " + content);
 			arr.add(content);
 		}
+		return arr;
 	}
 
-	public HashMap<String, String> select_repertoire(String service) throws Exception {
-		HashMap<String, String> dict = new HashMap<String, String>();
-		try (DataSource inst = open()) {
+	public Couplet<String, String> select_pk(String pk) throws SQLException {
+		String sql = "select insert_time, company_pk from ecchatrecords WHERE pk = " + "'" + pk + "')";
 
-			String services = null;
-			switch (service) {
-			case "map":
-			case "localsearch":
-				services = "'map', 'localsearch'";
-				break;
-			case "audio":
-			case "music":
-			case "joke":
-				services = "'audio', 'music', 'joke'";
-				break;
-			case "sms":
-			case "contact":
-			case "call":
-				services = "'sms', 'contact', 'call'";
-				break;
-			default:
-				break;
+		log.info("sql: \n" + sql);
+		Query query = new Query(sql);
+		String insert_time = null;
+		String company_pk = null;
+		if (query.hasNext()) {
+			ResultSet result = query.next();
+			insert_time = result.getString("insert_time");
+			company_pk = result.getString("company_pk");
+			if (query.hasNext()) {
+
 			}
+		} else {
 
-			for (ResultSet res : new Query(
-					String.format("select text, slot from tbl_repertoire where service in (%s)", services))) {
-				dict.put(res.getString("text"), res.getString("slot"));
-//				System.out.println(res.getString("text") + " = " + res.getString("slot"));
-			}
 		}
-		return dict;
+
+		return new Couplet<String, String>(company_pk, insert_time);
 	}
 
-	public String[] tbl_service_distinct_category() throws Exception {
-		ArrayList<String> arr = new ArrayList<String>();
-		String sql = "select distinct service from tbl_service order by service";
-//		String sql = "select distinct service from tbl_service order by service desc";
-		try (DataSource inst = open()) {
-			for (ResultSet res : new Query(sql)) {
-				arr.add(res.getString("service"));
-			}
-		}
+	/**
+	 * clear the duplicate instances if existed;
+	 * 
+	 * @param question
+	 * @param answer
+	 * @param coherence
+	 * @param time
+	 * @param FAQID
+	 * @param company_pk
+	 * @param origin
+	 * @param respondent
+	 * @throws SQLException
+	 */
+	public void insert(int question, int answer, double coherence, Date time, int FAQID, String company_pk,
+			Origin origin, String respondent) throws SQLException {
+		execute("delete from ecchatqacouplet where question = " + question + " and answer = " + answer
+				+ " and company_pk = \'" + company_pk + "\'");
 
-		return Utility.toArray(arr);
-
+		execute("insert into ecchatqacouplet(question, answer, coherence, time, FAQID, company_pk, origin, respondent) VALUES("
+				+ question + "," + answer + "," + coherence + "," + "\'" + Utility.toString(time) + "\'," + FAQID + ",'"
+				+ company_pk + "', " + origin.ordinal() + ", '" + respondent + "')");
 	}
 
-	public void selectTopicClassificationFromParent(String classPK, HashSet<String> pkMap) throws SQLException {
-		for (ResultSet res : new Query("select pk from comment_category WHERE parent_pk = '" + classPK + "'")) {
-			pkMap.add(res.getString("pk"));
-		}
+	public void insert(String company_pk, Date time, int total) throws SQLException {
+		execute("insert into ecchatreportupdate(company_pk, time, total) VALUES('" + company_pk + "','"
+				+ Utility.toString(time) + "'," + total + ")");
 	}
 
-	public void selectDialogClassificationFromRoot(String classPK, HashSet<String> pkMap) throws SQLException {
-		for (ResultSet res : new Query(
-				"select pk from ectopic WHERE parentpk = '-1' and companyPK = '" + classPK + "'")) {
-			pkMap.add(res.getString("pk"));
-		}
-	}
+	public void insert(String query, String reply, double confidence, Date time, String company_pk)
+			throws SQLException {
+		execute("delete from ecchatrepository where question = \'" + query + "\'" + " and answer = \'" + reply + "\'"
+				+ " and company_pk = \'" + company_pk + "\'");
 
-	public void selectTopicClassificationFromRoot(String classPK, HashSet<String> pkMap) throws SQLException {
-		for (ResultSet res : new Query(
-				"select pk from comment_category WHERE deepth = 1 and company_PK = '" + classPK + "'")) {
-			pkMap.add(res.getString("pk"));
-		}
+		execute("insert into ecchatrepository(question, answer, confidence, time, company_pk) VALUES(" + "\'" + query
+				+ "\'," + "\'" + reply + "\'," + confidence + "," + "\'" + Utility.toString(time) + "\'," + "\'"
+				+ company_pk + "\')");
+
+		// execute("COMMIT");
 	}
 
 	String bufferForReportQuery[] = new String[50];
 	int bufferLengthForReportQuery = 0;
 
+	public int[] executeBatchForReportQuery() throws SQLException {
+		log.info("public int[] executeBatch() throws SQLException");
+		log.info(Utility.toString(bufferForReportQuery, "\n", null, bufferLengthForReportQuery));
+		log.info("bufferLength = " + bufferLengthForReportQuery);
+		int bufferLength = this.bufferLengthForReportQuery;
+		this.bufferLengthForReportQuery = 0;
+		return execute(bufferForReportQuery, bufferLength);
+	}
+
 	String bufferForUnknownQuestion[] = new String[50];
 	int bufferLengthForUnknownQuestion = 0;
+
+	public int[] executeBatchForUnknownQuestion() throws SQLException {
+		log.info(Utility.toString(bufferForUnknownQuestion, "\n", null, bufferLengthForUnknownQuestion));
+		log.info("bufferLength = " + bufferLengthForUnknownQuestion);
+		int bufferLength = this.bufferLengthForUnknownQuestion;
+		this.bufferLengthForUnknownQuestion = 0;
+		return execute(bufferForUnknownQuestion, bufferLength);
+	}
 
 	public boolean isBatchInProcessForReportQuery() {
 		return this.bufferLengthForReportQuery > 0;
@@ -179,6 +202,270 @@ public class MySQL extends DataSource {
 
 	public boolean isBatchInProcessForUnknownQuestion() {
 		return this.bufferLengthForUnknownQuestion > 0;
+	}
+
+	synchronized public void reportUnknownQuestion(String company_pk, String question, String time)
+			throws SQLException {
+
+		bufferForUnknownQuestion[bufferLengthForUnknownQuestion] = "insert into ecchatreportunknownquestion(company_pk, question, time) VALUES("
+				+ "'" + company_pk + "', '" + question + "', '" + time + "')";
+
+		if (++bufferLengthForUnknownQuestion == bufferForUnknownQuestion.length) {
+			executeBatchForUnknownQuestion();
+		}
+	}
+
+	synchronized public void reportQuery(String company_pk, String question, String time, String recommended,
+			String selectedFAQ, String decision) throws SQLException {
+		if (selectedFAQ.length() == 0) {
+			selectedFAQ = null;
+		} else {
+			try {
+				if (Integer.parseInt(selectedFAQ) < 0) {
+					return;
+				}
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+
+		bufferForReportQuery[bufferLengthForReportQuery] = "insert into ecchatreportquery(company_pk, question, time, recommended, selected, decision) VALUES("
+				+ "'" + company_pk + "', '" + question + "', '" + time + "', '" + recommended + "', " + selectedFAQ
+				+ ", '" + decision + "')";
+
+		if (++bufferLengthForReportQuery == bufferForReportQuery.length) {
+			executeBatchForReportQuery();
+		}
+	}
+
+	public int report_query(String company_pk, Date start, Date end) throws SQLException {
+		String startTime = "'" + Utility.toString(start) + "'";
+		String endTime = "'" + Utility.toString(end) + "'";
+		Query query = new Query("select count(*) as cnt from ecchatreportquery where company_pk = '" + company_pk
+				+ "' AND time >= " + startTime + " AND time < " + endTime);
+		int cnt = 0;
+		if (query.hasNext()) {
+			cnt = query.next().getInt("cnt");
+			query.close();
+		} else {
+
+		}
+		return cnt;
+	}
+
+	public int report_recommended(String company_pk, Date start, Date end) throws SQLException {
+		String startTime = "'" + Utility.toString(start) + "'";
+		String endTime = "'" + Utility.toString(end) + "'";
+		Query query = new Query(
+				"select count(*) as cnt from ecchatreportquery where company_pk = '" + company_pk + "' and time >= "
+						+ startTime + " AND time < " + endTime + " and recommended is not null and recommended != ''");
+		int cnt = 0;
+		if (query.hasNext()) {
+			cnt = query.next().getInt("cnt");
+			query.close();
+		} else {
+
+		}
+		return cnt;
+	}
+
+	public int report_selected(String company_pk, Date start, Date end) throws SQLException {
+		String startTime = "'" + Utility.toString(start) + "'";
+		String endTime = "'" + Utility.toString(end) + "'";
+		Query query = new Query("select count(*) as cnt from ecchatreportquery where company_pk = '" + company_pk
+				+ "' and time >= " + startTime + " and time < " + endTime + " and selected is not null");
+		int cnt = 0;
+		if (query.hasNext()) {
+			cnt = query.next().getInt("cnt");
+			query.close();
+		} else {
+
+		}
+		return cnt;
+	}
+
+	public int report_partially_selected(String company_pk, Date start, Date end) throws SQLException {
+		String startTime = "'" + Utility.toString(start) + "'";
+		String endTime = "'" + Utility.toString(end) + "'";
+		Query query = new Query(
+				"select count(*) as cnt from ecchatreportquery where company_pk = '" + company_pk + "'and time >= "
+						+ startTime + " AND time < " + endTime + " and selected is not null and decision = 'PARTIAL'");
+		int cnt = 0;
+		if (query.hasNext()) {
+			cnt = query.next().getInt("cnt");
+			query.close();
+		} else {
+
+		}
+		return cnt;
+	}
+
+	public int report_utterly_selected(String company_pk, Date start, Date end) throws SQLException {
+		String startTime = "'" + Utility.toString(start) + "'";
+		String endTime = "'" + Utility.toString(end) + "'";
+		Query query = new Query(
+				"select count(*) as cnt from ecchatreportquery where company_pk = '" + company_pk + "'and time >= "
+						+ startTime + " AND time < " + endTime + " and selected is not null and decision = 'COMPLETE'");
+		int cnt = 0;
+		if (query.hasNext()) {
+			cnt = query.next().getInt("cnt");
+			query.close();
+		} else {
+
+		}
+		return cnt;
+	}
+
+	// http://dev.mysql.com/doc/refman/5.7/en/string-functions.html
+	public HashMap<Integer, Double> report_recommended(String company_pk, int nBest, Date start, Date end)
+			throws SQLException {
+		String startTime = "'" + Utility.toString(start) + "'";
+		String endTime = "'" + Utility.toString(end) + "'";
+		Query query = new Query("SELECT recommended FROM ecchatreportquery WHERE company_pk = '" + company_pk
+				+ "' and time between " + startTime + " and " + endTime);
+		int cnt = 0;
+		int arr[] = new int[nBest];
+		HashMap<Integer, Double> map = new HashMap<Integer, Double>();
+		for (ResultSet res : query) {
+			int[] faqs = Utility.parseInt(res.getString("recommended"));
+			for (int faq : faqs) {
+				double score;
+				if (map.containsKey(faq)) {
+					score = map.get(faq);
+				} else {
+					score = 0;
+				}
+				map.put(faq, score + 1.0 / faqs.length);
+			}
+		}
+
+		if (cnt < nBest) {
+			arr = java.util.Arrays.copyOf(arr, cnt);
+		}
+		return map;
+	}
+
+	public int report_faq_totality(String company_pk, Date time) throws SQLException {
+		Query query = new Query("SELECT total FROM ecchatreportupdate WHERE COMPANY_PK = '"
+
+				+ company_pk
+
+				+ "' and time <= '" + Utility.toString(time)
+
+				+ "' ORDER BY time DESC");
+
+		int maximum = -1;
+		if (query.hasNext()) {
+			maximum = query.next().getInt("total");
+			query.close();
+		} else {
+			maximum = 0;
+		}
+
+		return maximum;
+	}
+
+	/**
+	 * all the natural questions and answers for this particular faq will be
+	 * cleared,
+	 * 
+	 * @param FAQID
+	 * @param que
+	 * @param ans
+	 * @param hierarchy
+	 * @param company_pk
+	 * @param frequency
+	 * @throws SQLException
+	 */
+	public void insert(FAQ faq, String company_pk) throws SQLException, Exception {
+		BatchExecutive deleteExecutive = new BatchExecutive();
+		BatchExecutive insertExecutive = new BatchExecutive();
+		String sql = "delete from ecchatfaqcorpus where FAQID = " + faq.id + " and company_pk = \'" + company_pk + "\'";
+		log.info("sql = " + sql);
+		deleteExecutive.addBatch(sql);
+
+		for (QACouplet qaCouplet : faq) {
+			String question = Utility.remove_apostrophe(qaCouplet.que.toString());
+			String answer = Utility.remove_apostrophe(qaCouplet.ans.toString());
+
+			sql = "delete from ecchatfaqcorpus where question = '" + question + "' and answer = '" + answer
+					+ "' and company_pk = '" + company_pk + "'";
+			// log.info("delete " + question);
+			deleteExecutive.addBatch(sql);
+
+			sql = "insert into ecchatfaqcorpus(question, answer, coherence, time, FAQID, company_pk, origin, respondent, frequency) VALUES('"
+					+ question + "','" + answer + "'," + qaCouplet.coherence + "," + "'"
+					+ Utility.toString(qaCouplet.time) + "'," + faq.id + ",'" + company_pk + "', "
+					+ qaCouplet.origin.ordinal() + ", '" + qaCouplet.respondent + "', " + qaCouplet.frequency + ")";
+			log.info("insert " + question);
+			insertExecutive.addBatch(sql);
+		}
+
+		deleteExecutive.executeBatch();
+		insertExecutive.executeBatch();
+	}
+
+	public static class TransferRecord {
+		public String operator;
+		public String trench;
+		public String time;
+		public int outDegree;
+		public int inDegree;
+	}
+
+	/**
+	 * 
+	 * request_time in [startTime, endTime); endTime - startTime should be the time
+	 * interval; by default, it should be half an hour.
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 * @throws SQLException
+	 */
+
+	public void ReadFromChatRecords(String startTime, String endTime) throws SQLException {
+		startTime = "'" + startTime + "'";
+		endTime = "'" + endTime + "'";
+		Query query = new Query("SELECT trench, event_name, event_target_name, Request_time FROM ECCHATRECORDS "
+				+ " where event_name is not null and request_time >= " + startTime + " and request_time < " + endTime);
+
+		HashMap<String, int[]> map = new HashMap<String, int[]>();
+		for (ResultSet res : query) {
+			String trench = res.getString("trench");
+			String event_name[] = res.getString("event_name").split(";");
+			String event_target_name[] = res.getString("event_target_name").split(";");
+			String request_time = res.getString("request_time");
+			for (int i = 0; i < event_name.length; ++i) {
+				switch (event_name[i]) {
+				case "接入": {
+					String key = event_target_name[i] + ":" + trench;
+					if (!map.containsKey(key)) {
+						map.put(key, new int[2]);
+					}
+					++map.get(key)[0];
+				}
+					break;
+				case "转移":
+					String key = event_target_name[i] + ":" + trench;
+					if (!map.containsKey(key)) {
+						map.put(key, new int[2]);
+					}
+					++map.get(key)[0];
+					break;
+				case "接管":
+
+					break;
+				case "邀请":
+
+					break;
+				default:
+					break;
+				}
+
+			}
+		}
 	}
 
 	void retrieveDatabaseInfo() throws Exception {
@@ -242,20 +529,20 @@ public class MySQL extends DataSource {
 
 	public void insert(String x, String y, int similarity) throws SQLException {
 		String sql = "select similarity from synonym where x = '" + x + "' and y = '" + y + "'";
-		// System.out.println("sql = " + sql);
+//		System.out.println("sql = " + sql);
 		Query query = new Query(sql);
 		for (ResultSet result : query) {
-			// System.out.println("keys already exist: " + x + ", " + y);
+//			System.out.println("keys already exist: " + x + ", " + y);
 			query.close();
 
 			execute("update synonym set x = '" + x + "', y = '" + y + "', similarity = " + similarity);
 			return;
 		}
 		sql = "select similarity from synonym where x = '" + y + "' and y = '" + x + "'";
-		// System.out.println("sql = " + sql);
+//		System.out.println("sql = " + sql);
 		query = new Query(sql);
 		for (ResultSet result : query) {
-			// System.out.println("keys already exist: " + x + ", " + y);
+//			System.out.println("keys already exist: " + x + ", " + y);
 			query.close();
 			execute("update synonym set x = '" + x + "', y = '" + y + "', similarity = " + similarity);
 			return;
@@ -265,6 +552,7 @@ public class MySQL extends DataSource {
 	}
 
 	public static void main(String[] args) throws Exception {
-		instance.select_repertoire("map");
+		instance.open();
+		instance.close();
 	}
 }

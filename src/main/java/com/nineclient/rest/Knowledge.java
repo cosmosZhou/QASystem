@@ -4,9 +4,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -16,18 +18,27 @@ import org.apache.log4j.Logger;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.robot.Repertoire;
-import com.robot.semantic.RNN.RNNTopicClassifier;
 import com.robot.QACouplet;
 
 import com.robot.QASystem;
-
-import com.robot.util.PropertyConfig;
+import com.util.Native;
+import com.util.PropertyConfig;
 import com.util.Utility;
 import com.util.Utility.Couplet;
 
+//121.43.150.14  root   clienT1!2019  ssh:22
+//27.115.49.154  root  clienT1!    数据库端口：8806  数据库comos
 /**
+ * https://blog.csdn.net/qq_38685503/article/details/82495083
  * the way to invoke the method;
- * http://121.40.130.192:8080/QASystem/resteasy/Knowledge/methodName?parameterName0=aaa&parameterName1=bbb
+ * localhost:8080/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
+ * 121.43.150.14:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
+ * http://121.40.130.192:8080/QASystem/Knowledge/methodName?parameterName0=aaa&parameterName1=bbb
+ * http://121.40.130.192:8080/QASystem/Knowledge/methodName/aaa/bbb
+ *
+  tail -100f tomcat/logs/catalina.out  
+  sh tomcat/bin/startup.sh
+  python3 solution/pytext/gunicorn.py --cpp=eigen  
  * 
  * @author Cosmos
  *
@@ -104,89 +115,6 @@ public class Knowledge {
 	@Produces(MediaType.TEXT_PLAIN)
 	public String searchGET(@Context HttpServletRequest request) {
 		return this.searchPOST(request);
-	}
-
-	@POST
-	@Path("/classify")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String classifyPOST(@Context HttpServletRequest request) {
-		// question
-		String comment = request.getParameter("comment");
-
-		// List<String> companyList = new ArrayList<String>();
-		// companyList.add(companyPk);
-		String result = "";
-		try {
-			comment = URLDecoder.decode(comment, "UTF-8");
-			log.info("comment = " + comment);
-			String[][] label = RNNTopicClassifier.instance.classify(comment, 5);
-
-			result = URLEncoder.encode(Utility.toString(label, "; "), "UTF-8");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return result;
-	}
-
-	@GET
-	@Path("/classify")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String classifyGET(@Context HttpServletRequest request) {
-		return this.classifyPOST(request);
-	}
-
-	@POST
-	@Path("/confirm")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String confirmPOST(@Context HttpServletRequest request) {
-		// question
-		String comment = request.getParameter("comment");
-		String label = request.getParameter("label");
-
-		// List<String> companyList = new ArrayList<String>();
-		// companyList.add(companyPk);
-		String result = "";
-		try {
-			comment = URLDecoder.decode(comment, "UTF-8");
-			log.info("comment = " + comment);
-			label = URLDecoder.decode(label, "UTF-8");
-			log.info("label = " + label);
-			String[] labels = label.trim().split(",\\s*");
-			RNNTopicClassifier.instance.insert(comment, false, labels);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return result;
-	}
-
-	@GET
-	@Path("/confirm")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String confirmGET(@Context HttpServletRequest request) {
-		return this.confirmPOST(request);
-	}
-
-	@POST
-	@Path("/training")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String trainingPOST(@Context HttpServletRequest request) {
-		try {
-			log.info("trainingSuccessiveLayerClassifier is invoked!");
-			RNNTopicClassifier.instance.trainingSuccessiveLayerClassifier();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return "{\"success\":\"true\"}";
-	}
-
-	@GET
-	@Path("/training")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String trainingGET(@Context HttpServletRequest request) {
-		return this.trainingPOST(request);
 	}
 
 	@POST
@@ -815,13 +743,13 @@ public class Knowledge {
 			// + request.getSession().getServletContext().getRealPath("/"));
 			// workingDirectory = workingDirectory.substring(0,
 			// workingDirectory.length() - "/QASystem/".length());
-			String workingDirectory = PropertyConfig.getProperty("pwd");
+			String workingDirectory = PropertyConfig.config.get("property", "pwd");
 			log.info("workingDirectory = " + workingDirectory);
 
 			excelFile = Utility.createTemporaryFile(workingDirectory + "/cdatas", "xlsx");
 			QASystem.instance.getRepertoire(companyPk).export(excelFile);
 
-			excelFile = excelFile.replace(workingDirectory, PropertyConfig.getProperty("downloadpath"));
+			excelFile = excelFile.replace(workingDirectory, PropertyConfig.config.get("property", "downloadpath"));
 			log.info("res = " + excelFile);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -883,12 +811,13 @@ public class Knowledge {
 		try {
 			log.info("exporting UNKNOWN knowledge, companyPk = " + companyPk);
 
-			String workingDirectory = PropertyConfig.getProperty("pwd");
+			String workingDirectory = PropertyConfig.config.get("property", "pwd");
 			log.info("workingDirectory = " + workingDirectory);
 
 			excelFile = Utility.createTemporaryFile(workingDirectory + "/cdatas", "xlsx");
 			QASystem.instance.getRepertoire(companyPk).exportUnknown(excelFile);
-			excelFile = excelFile.replace(workingDirectory, PropertyConfig.getProperty("downloadpath"));
+
+			excelFile = excelFile.replace(workingDirectory, PropertyConfig.config.get("property", "downloadpath"));
 			log.info("res = " + excelFile);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -915,13 +844,13 @@ public class Knowledge {
 		try {
 			log.info("exporting Supervised knowledge, companyPk = " + companyPk);
 
-			String workingDirectory = PropertyConfig.getProperty("pwd");
+			String workingDirectory = PropertyConfig.config.get("property", "pwd");
 			log.info("workingDirectory = " + workingDirectory);
 
 			excelFile = Utility.createTemporaryFile(workingDirectory + "/cdatas", "xlsx");
 			QASystem.instance.getRepertoire(companyPk).exportSupervised(excelFile);
 
-			excelFile = excelFile.replace(workingDirectory, PropertyConfig.getProperty("downloadpath"));
+			excelFile = excelFile.replace(workingDirectory, PropertyConfig.config.get("property", "downloadpath"));
 			log.info("res = " + excelFile);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -977,12 +906,13 @@ public class Knowledge {
 		try {
 			log.info("exporting Unsupervised knowledge, companyPk = " + companyPk);
 
-			String workingDirectory = PropertyConfig.getProperty("pwd");
+			String workingDirectory = PropertyConfig.config.get("property", "pwd");
 			log.info("workingDirectory = " + workingDirectory);
 
 			excelFile = Utility.createTemporaryFile(workingDirectory + "/cdatas", "xlsx");
 			QASystem.instance.getRepertoire(companyPk).exportUnsupervised(excelFile);
-			excelFile = excelFile.replace(workingDirectory, PropertyConfig.getProperty("downloadpath"));
+
+			excelFile = excelFile.replace(workingDirectory, PropertyConfig.config.get("property", "downloadpath"));
 			log.info("res = " + excelFile);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1351,9 +1281,55 @@ public class Knowledge {
 		if (SystemUtils.IS_OS_WINDOWS) {
 			Utility.workingDirectory = "D:/360/solution/";
 		} else {
+			Utility.workingDirectory = "/home/zhoulizhi/solution/";
 		}
-		
+
+		log.info("workingDirectory = " + Utility.workingDirectory);
 		log.info("Knowledge is initialized successfully!");
 	}
 
+	@GET
+	@Path("phatic/{text}")
+	@Produces("text/plain;charset=utf-8")
+	public String phatic(@PathParam("text") String text) throws Exception {
+		return String.valueOf(Native.phatic(text));
+	}
+
+	@POST
+	@Path("phatic")
+	@Consumes("application/x-www-form-urlencoded")
+	@Produces("text/plain;charset=utf-8")
+	public String phatic(@Context HttpServletRequest request) throws Exception {
+		return String.valueOf(Native.phatic(request.getParameter("text")));
+	}
+
+	@GET
+	@Path("qatype/{text}")
+	@Produces("text/plain;charset=utf-8")
+	public String qatype(@PathParam("text") String text) throws Exception {
+		return String.valueOf(Native.qatype(text));
+	}
+
+	@POST
+	@Path("qatype")
+	@Consumes("application/x-www-form-urlencoded")
+	@Produces("text/plain;charset=utf-8")
+	public String qatype(@Context HttpServletRequest request) throws Exception {
+		return String.valueOf(Native.qatype(request.getParameter("text")));
+	}
+
+	@GET
+	@Path("similarity/{x}/{y}")
+	@Produces("text/plain;charset=utf-8")
+	public String similarity(@PathParam("x") String x, @PathParam("y") String y) throws Exception {
+		return String.valueOf(Native.similarity(x, y));
+	}
+
+	@POST
+	@Path("similarity")
+	@Consumes("application/x-www-form-urlencoded")
+	@Produces("text/plain;charset=utf-8")
+	public String similarity(@Context HttpServletRequest request) throws Exception {
+		return String.valueOf(Native.similarity(request.getParameter("x"), request.getParameter("y")));
+	}
 }

@@ -9,10 +9,9 @@ import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import com.robot.Repertoire.SearchResult;
 import com.robot.QASystem.Period;
-import com.robot.DateBase.MySQL;
-import com.robot.semantic.RNN.RNNTopicClassifier;
 import com.alibaba.fastjson.JSONArray;
 import com.robot.Repertoire.AnsQuintuple;
+import com.util.MySQL;
 import com.util.Utility;
 import com.util.Utility.Couplet;
 
@@ -288,19 +287,6 @@ public class QASystemInvoker {
 
 	}
 
-	public void topicClassification() throws Exception {
-		String comment = "篡改法规";
-		String[][] res = RNNTopicClassifier.instance.classify(comment, 5);
-
-		log.info("res = " + Utility.toString(res, "; "));
-
-		RNNTopicClassifier.instance.insert("松紧带没有露出来", false, "产品质量投诉", "故障", "风险", "橡皮筋");
-		RNNTopicClassifier.instance.deleteCriteria("橡皮筋；扯断", "产品质量投诉", "故障", "风险", "橡皮筋");
-		
-		RNNTopicClassifier.instance.trainingSuccessiveLayerClassifier();
-
-	}
-
 	//  cd E:\360\solution\models
 	//	java -classpath .;E:\360\solution\QASystem\WebContent\WEB-INF\lib\* com.robot.QASystemInvoker
 
@@ -318,7 +304,7 @@ public class QASystemInvoker {
 		// tester.create_index();
 		//		tester.searchQuestion();
 		//		tester.update();
-		tester.topicClassification();
+	
 		// tester.search();
 		// tester.deleteSupervisedFAQ();
 		//		 tester.submitSupervisedFAQ();

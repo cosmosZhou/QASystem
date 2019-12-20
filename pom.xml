@@ -46,6 +46,9 @@
 			<properties>
 				<mysql.version>5.1.47</mysql.version>
 			</properties>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 		</profile>
 		<profile>
 			<id>prod</id>
@@ -53,7 +56,7 @@
 				<mysql.version>8.0.15</mysql.version>
 			</properties>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
 			</activation>
 		</profile>
 	</profiles>
@@ -77,11 +80,13 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>2.9.8</version>
 		</dependency>
+
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/com.zaxxer/HikariCP-java7 -->
 		<dependency>
 			<groupId>com.zaxxer</groupId>
@@ -111,19 +116,6 @@
 			<version>3.1</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.jblas</groupId>
-			<artifactId>jblas</artifactId>
-			<version>1.2.4</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/com.googlecode.efficient-java-matrix-library/ejml -->
-		<dependency>
-			<groupId>com.googlecode.efficient-java-matrix-library</groupId>
-			<artifactId>ejml</artifactId>
-			<version>0.23</version>
-		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
 		<dependency>
 			<groupId>com.alibaba</groupId>
@@ -150,6 +142,7 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.5</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -157,6 +150,7 @@
 			<version>3.1.0</version>
 			<scope>provided</scope>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-analyzers-common -->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
@@ -169,6 +163,7 @@
 			<artifactId>lucene-core</artifactId>
 			<version>4.0.0</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser -->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
@@ -183,38 +178,10 @@
 			<version>2012_u6</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.glassfish/javax.json -->
 		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.json</artifactId>
-			<version>1.0.4</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/joda-time/joda-time -->
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>2.6</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/com.io7m.xom/xom -->
-		<dependency>
-			<groupId>com.io7m.xom</groupId>
-			<artifactId>xom</artifactId>
-			<version>1.2.10</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/de.jollyday/jollyday -->
-		<dependency>
-			<groupId>de.jollyday</groupId>
-			<artifactId>jollyday</artifactId>
-			<version>0.4.9</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.xmlbeans/xmlbeans -->
-		<dependency>
-			<groupId>org.apache.xmlbeans</groupId>
-			<artifactId>xmlbeans</artifactId>
-			<version>2.6.0</version>
+			<groupId>org.ini4j</groupId>
+			<artifactId>ini4j</artifactId>
+			<version>0.5.2</version>
 		</dependency>
 
 	</dependencies>

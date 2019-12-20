@@ -20,7 +20,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.robot.Repertoire.AnsQuintuple;
 import com.robot.Sentence.Protagonist;
-import com.robot.DateBase.MySQL;
+import com.util.MySQL;
 import com.util.Utility;
 import com.util.Utility.Couplet;
 import com.util.Utility.Timer;

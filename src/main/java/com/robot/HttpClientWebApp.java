@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.robot.DateBase.MySQL;
+import com.util.MySQL;
 import com.util.Utility;
 
 public class HttpClientWebApp {
@@ -165,30 +165,6 @@ public class HttpClientWebApp {
 	}
 
 	public void update() throws UnsupportedEncodingException, FileNotFoundException, InterruptedException {
-//		companyPk = "ff8080815ce312bf015ce318b0621111";
-		// ff8080815ce312bf015ce318b0620002
-		// String regex = "INSERT INTO `ecchatrecords_copy` VALUES \\('([\\s\\S]+)',
-		// [\\S]+, [\\S]+\\);";
-		// for (String str : new Utility.StringReader(Utility.workingDirectory +
-		// "record.txt")) {
-		// // log.info(str);
-		// // String[] res = Utility.regexSingleton(str, regex);
-		// // if (res == null)
-		// // continue;
-		// if (str.length() <= 2)
-		// continue;
-		//
-		// if (str.startsWith("\"")) {
-		// str = str.substring(1, str.length() - 1);
-		// }
-		//
-		// log.info(str);
-		// // content = content.replace("\\\'", "'");
-		// // content = content.replace("\\\"", """);
-		// update(str);
-		// Thread.sleep(8 * 1000);
-		// }
-		// companyPk = "ff8080815ce312bf015ce318b0620002";
 		String question = "你好周末你去哪里玩";
 		String answer = "你好去佘山啊!";
 

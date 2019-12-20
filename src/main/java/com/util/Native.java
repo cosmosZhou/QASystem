@@ -24,7 +24,7 @@ public class Native {
 
 	public native static double qatype(String text);
 	
-	public native static double phatics(String text);
+	public native static double phatic(String text);
 	
 	public native static double similarity(String x, String y);
 

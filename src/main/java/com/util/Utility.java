@@ -31,7 +31,6 @@ import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -66,11 +65,12 @@ import java.util.Stack;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.Vector;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import java.util.function.Consumer;
+
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -78,18 +78,15 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.jblas.DoubleMatrix;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.util.DataSource.Driver;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
-import oracle.jdbc.pool.OracleDataSource;
 
 public class Utility {
+
 	public static void main(String[] args) throws Exception {
+		DoubleFloatComparation();
+
 		Timer Timer = new Timer();
 
 		String sentence = "((((它/DT/de)的/DE/adj)优势/NN/adj)在于/VT/adv)(，/PU/pu)无须/VT/root((驾驶员/NN/suj)进行/VT/obj((任何/JJ/adj)操作/VBG/obj(，/PU/pu)(((不会/NEG/adj)分散/NN/adj)注意力/NN/de)))";
@@ -104,6 +101,43 @@ public class Utility {
 		}
 
 		Timer.report();
+	}
+
+	public static void DoubleFloatComparation() {
+
+		// double float comparation
+
+		long start2 = System.nanoTime();
+
+		float f = 0f;
+
+		for (int i = 0; i < Integer.MAX_VALUE; i++) {
+
+			f += 0.1;
+			f *= 1.2;
+			f /= 1.2;
+		}
+
+		long end2 = System.nanoTime();
+
+		System.out.println("float cost time: " + (end2 - start2) / 1000000);
+
+		long start3 = System.nanoTime();
+
+		double d = 0d;
+
+		for (int i = 0; i < Integer.MAX_VALUE; i++) {
+
+			d += 0.1;
+			d *= 1.2;
+			d /= 1.2;
+
+		}
+
+		long end3 = System.nanoTime();
+
+		System.out.println("double cost time: " + (end3 - start3) / 1000000);
+
 	}
 
 	static public void pause() throws IOException {
@@ -254,7 +288,6 @@ public class Utility {
 
 		return str.trim().split("\\s+");
 	}
-
 
 	static public String[] convertWithAlignment(String[]... arr) {
 		String[] res = new String[arr.length];
@@ -2727,10 +2760,10 @@ public class Utility {
 			// start = new Date().getTime();
 			start = System.currentTimeMillis();
 		}
+
 		public long lapsedSeconds() {
 			return (System.currentTimeMillis() - start) / 1000;
 		}
-
 
 		public void report() {
 			double dif = System.currentTimeMillis() - start;
@@ -3391,332 +3424,6 @@ public class Utility {
 			logger.info("This is info message.");
 			// 记录error级别的信息
 			logger.error("This is error message.");
-		}
-	}
-
-	/**
-	 * HikariCP使用
-	 * 
-	 * @author CoolKing
-	 *
-	 */
-	// http://repo1.maven.org/maven2/com/zaxxer/HikariCP-java7/2.4.8/
-	public static class DataSource {
-		String key[] = { "user", "password", "useUnicode", "characterEncoding", "autoReconnect", };
-
-		String value[] = { "user", "password", "true", "utf-8", "true", };
-
-		abstract public class Invoker<TYPE> {
-			protected abstract TYPE invoke() throws Exception;
-
-			public DataSource getDataSource() throws Exception {
-				return DataSource.this;
-			}
-
-			public TYPE execute() throws Exception {
-				TYPE obj = null;
-				open();
-				try {
-					obj = invoke();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-					close();
-				}
-				return obj;
-			}
-
-		}
-
-		private HikariDataSource ds;
-		Connection con = null;
-
-		public DatabaseMetaData getDatabaseMetaData() throws SQLException {
-			return con.getMetaData();
-		}
-
-		int cnt = 0;
-
-		public synchronized Connection open() throws Exception {
-			++cnt;
-			if (con != null) {
-				log.info("Connection is already opened. cnt = " + cnt);
-				// the Connection might be shut down automatically if it is not
-				// used for a long time;
-				if (con.isClosed()) {
-					con = getConnection();
-				}
-				return con;
-			}
-
-			// Class.forName("com.mysql.jdbc.Driver");
-			// con = DriverManager.getConnection(url, user, password);
-			con = getConnection();
-			log.info("Connection is opened.");
-			return con;
-		}
-
-		public synchronized void close() throws Exception {
-			--cnt;
-			if (con == null || cnt < 0) {
-				log.info("Connection is already closed. cnt = " + cnt);
-				return;
-			}
-
-			if (cnt == 0) {
-				con.close();
-				con = null;
-				// System.gc();
-			}
-			log.info("Connection is closed.");
-		}
-
-		public class Query implements Iterable<ResultSet>, Iterator<ResultSet> {
-
-			public Query(String sql) throws SQLException {
-				// log.info("Query : " + sql);
-				prepareStatement(sql);
-			}
-
-			public void prepareStatement(String sql) throws SQLException {
-				preparedStatement = con.prepareStatement(sql);
-				result = preparedStatement.executeQuery();
-			}
-
-			ResultSet result;
-			PreparedStatement preparedStatement;
-
-			public void close() throws SQLException {
-				result.close();
-				preparedStatement.close();
-			}
-
-			@Override
-			public boolean hasNext() {
-				// TODO Auto-generated method stub
-				try {
-					if (result.next())
-						return true;
-					else {
-						close();
-						return false;
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					return false;
-				}
-			}
-
-			@Override
-			public ResultSet next() {
-				// TODO Auto-generated method stub
-				return result;
-			}
-
-			@Override
-			public void remove() {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public Iterator<ResultSet> iterator() {
-				// TODO Auto-generated method stub
-				return this;
-			}
-		}
-
-		public boolean execute(String sql) throws SQLException {
-			log.info("sql: " + sql);
-			boolean ret = false;
-			PreparedStatement preparedStatement = con.prepareStatement(sql);
-			try {
-				ret = preparedStatement.execute();
-			} catch (Exception e) {
-				preparedStatement.close();
-				e.printStackTrace();
-				throw e;
-			} finally {
-				preparedStatement.close();
-			}
-
-			return ret;
-		}
-
-		public class BatchExecutive {
-			public BatchExecutive() throws SQLException {
-				statement = con.createStatement();
-			}
-
-			Statement statement;
-
-			public void addBatch(String sql) throws SQLException {
-				statement.addBatch(sql);
-			}
-
-			public void executeBatch() throws SQLException {
-				try {
-					statement.executeBatch();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} finally {
-					statement.close();
-				}
-			}
-		}
-
-		protected int[] execute(String sql[]) throws SQLException {
-			return execute(sql, sql.length);
-		}
-
-		protected int[] execute(String sql[], int length) throws SQLException {
-			Statement statement = con.createStatement();
-
-			int[] res = null;
-			try {
-				for (int i = 0; i < length; ++i) {
-					log.info("sql: " + sql[i]);
-					if (sql[i] == null)
-						throw new Exception("null sql occurred.");
-					statement.addBatch(sql[i]);
-				}
-				res = statement.executeBatch();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				statement.close();
-			}
-			// con.commit();
-
-			return res;
-		}
-
-		public DataSource(String url, String user, String password, Driver driver, String serverTimezone) {
-			int minimum = 10;
-			int maximum = 50;
-			// pool configuration
-			HikariConfig config = new HikariConfig();
-			switch (driver) {
-			case mysql:
-				config.setDriverClassName("com.mysql.jdbc.Driver");
-				String value[] = { user, password, "true", "utf-8", "true", serverTimezone};
-				String key[] = { "user", "password", "useUnicode", "characterEncoding", "autoReconnect", "serverTimezone"};
-
-				for (int i = 0; i < value.length; ++i) {
-					url += '&' + key[i] + '=' + value[i];
-				}
-
-				config.setJdbcUrl(url);
-				log.info("url = " + url);
-				config.addDataSourceProperty("prepStmtCacheSqlLimit", 2048);
-				config.setConnectionTestQuery("SELECT 1");
-
-				break;
-			case oracle:
-				// config.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
-				// config.setDataSourceClassName("oracle.jdbc.pool.OracleDataSource");
-				config.setDriverClassName("oracle.jdbc.driver.OracleDriver");
-
-				OracleDataSource dataSource = null;
-				try {
-					dataSource = new OracleDataSource();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				log.info("url = " + url);
-				dataSource.setURL(url);
-				dataSource.setUser(user);
-				dataSource.setPassword(password);
-				config.setDataSource(dataSource);
-				// config.setConnectionTestQuery("SELECT 1");
-				break;
-			}
-
-			config.addDataSourceProperty("cachePrepStmts", true);
-			config.addDataSourceProperty("prepStmtCacheSize", 500);
-
-			config.setAutoCommit(true);
-			// 池中最小空闲链接数量
-			config.setMinimumIdle(minimum);
-			// 池中最大链接数量
-			config.setMaximumPoolSize(maximum);
-
-			ds = new HikariDataSource(config);
-		}
-
-		/**
-		 * 初始化连接池
-		 * 
-		 * @param minimum
-		 * @param Maximum
-		 */
-		public DataSource(String url, String user, String password) {
-			int minimum = 10;
-			int Maximum = 50;
-			// 连接池配置
-			HikariConfig config = new HikariConfig();
-			config.setDriverClassName("com.mysql.jdbc.Driver");
-
-			value[0] = user;
-			value[1] = password;
-			for (int i = 0; i < value.length; ++i) {
-				url += '&' + key[i] + '=' + value[i];
-			}
-			config.setJdbcUrl(url);
-			log.info("url = " + url);
-			config.addDataSourceProperty("cachePrepStmts", true);
-			config.addDataSourceProperty("prepStmtCacheSize", 500);
-			config.addDataSourceProperty("prepStmtCacheSqlLimit", 2048);
-			config.setConnectionTestQuery("SELECT 1");
-			config.setAutoCommit(true);
-			// 池中最小空闲链接数量
-			config.setMinimumIdle(minimum);
-			// 池中最大链接数量
-			config.setMaximumPoolSize(Maximum);
-
-			ds = new HikariDataSource(config);
-		}
-
-		/**
-		 * 销毁连接池
-		 */
-		@SuppressWarnings("deprecation")
-		public void shutdown() {
-			ds.shutdown();
-		}
-
-		/**
-		 * 从连接池中获取链接
-		 * 
-		 * @return
-		 */
-		public Connection getConnection() {
-			try {
-				return ds.getConnection();
-			} catch (SQLException e) {
-				e.printStackTrace();
-				ds.resumePool();
-				return null;
-			}
-		}
-
-		public static void test(String[] args) throws SQLException {
-			String url = "jdbc:mysql://121.40.196.48:3306/ucc?";
-			String user = "root";
-			String password = "client1!";
-
-			DataSource ds = new DataSource(url, user, password);
-			Connection conn = ds.getConnection();
-
-			// ......
-			// 最后关闭链接
-			conn.close();
 		}
 	}
 
@@ -7088,58 +6795,6 @@ public class Utility {
 			System.out.print(++i == arr.length ? "\n" : " ");
 		}
 	}
-	
-	public static DoubleMatrix[] add(DoubleMatrix[] x, DoubleMatrix[] y) {
-		DoubleMatrix[] z = new DoubleMatrix[x.length];
-		for (int i = 0; i < x.length; ++i) {
-			z[i] = x[i].add(y[i]);
-		}
-
-		return z;
-	}
-
-	
-	public static DoubleMatrix addi(DoubleMatrix x, DoubleMatrix y) {
-		if (x == null)
-			return y;
-		if (y == null)
-			return x;
-
-		return x.addi(y);
-	}
-
-	public static DoubleMatrix[] addi(DoubleMatrix[] x, DoubleMatrix[] y) {
-		for (int i = 0; i < x.length; ++i) {
-			x[i].addi(y[i]);
-		}
-
-		return x;
-	}
-
-	public static DoubleMatrix[] divi(DoubleMatrix[] x, double y) {
-		for (int i = 0; i < x.length; ++i) {
-			x[i].divi(y);
-		}
-
-		return x;
-	}
-
-
-	public static DoubleMatrix[] concatHorizontally(DoubleMatrix[] x, DoubleMatrix[] y) {
-		DoubleMatrix[] z = new DoubleMatrix[x.length];
-		for (int i = 0; i < x.length; ++i) {
-			z[i] = DoubleMatrix.concatHorizontally(x[i], y[i]);
-		}
-		return z;
-	}
-
-	public static DoubleMatrix[] muli(DoubleMatrix[] x, DoubleMatrix[] y) {
-		for (int i = 0; i < x.length; ++i) {
-			x[i].muli(y[i]);
-		}
-
-		return x;
-	}
 
 	public static class BinaryReader {
 		public DataInputStream dis;
@@ -7305,55 +6960,14 @@ public class Utility {
 		return y;
 	}
 
-	static public double min(DoubleMatrix x, int row_index) {
-		double v = Double.POSITIVE_INFINITY;
-		for (int i = row_index, end = row_index + x.columns * x.rows; i < end; i += x.rows) {
-			double xi = x.get(i);
-			if (xi == xi && xi < v) {
-				v = xi;
-			}
-		}
-		return v;
-	}
-
-	static public int argmin(DoubleMatrix x, int row_index) {
-		double v = Double.POSITIVE_INFINITY;
-		int argmin = -1;
-		for (int i = row_index, end = row_index + x.columns * x.rows, j = 0; i < end; i += x.rows, ++j) {
-			double xi = x.get(i);
-			if (xi == xi && xi < v) {
-				v = xi;
-				argmin = j;
-			}
-		}
-		return argmin;
-	}
-
-	static public int[] argmin(DoubleMatrix x) {
-		int[] arr = new int[x.rows];
-		for (int i = 0; i < x.rows; ++i) {
-			arr[i] = argmin(x, i);
-		}
-		return arr;
-	}
-
-	static public DoubleMatrix min(DoubleMatrix x) {
-		double[] arr = new double[x.rows];
-		for (int i = 0; i < x.rows; ++i) {
-			arr[i] = min(x, i);
-		}
-		// return a row vector!
-		return new DoubleMatrix(1, x.rows, arr);
-	}
-
 	static public String jsonify(Object object) throws JsonProcessingException {
 		return new ObjectMapper().writeValueAsString(object);
 	}
 
-
 	static public <String> String[] tuple(String... arr) {
 		return arr;
 	}
+
 	static public <String> List<String> list(String... arr) {
 		ArrayList<String> list = new ArrayList<String>(arr.length);
 		for (int i = 0; i < arr.length; i++) {
@@ -7362,6 +6976,7 @@ public class Utility {
 
 		return list;
 	}
+
 	static public <T> T dejsonify(String json, Class<T> valueType) throws IOException {
 		return new ObjectMapper().readValue(json, valueType);
 	}

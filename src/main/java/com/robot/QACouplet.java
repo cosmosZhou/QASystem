@@ -58,8 +58,8 @@ public class QACouplet implements Serializable, Comparable<QACouplet> {
 	}
 
 	double similarity(QACouplet y) throws Exception {
-		double a = que.questionSimilarity(y.que);
-		double b = ans.answerSimilarity(y.ans);
+		double a = que.similarity(y.que);
+		double b = ans.similarity(y.ans);
 		if (a < b) {
 			return Math.sqrt(0.5 * a * a + 0.5 * b * b);
 		} else

@@ -2,23 +2,11 @@ package com.robot;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
-
-import com.deeplearning.CWSTagger;
-import com.robot.semantic.EditDistanceLevenshtein;
-import com.robot.semantic.Thesaurus;
-import com.robot.syntax.Constituent;
-import com.robot.syntax.POSTagger;
-import com.robot.syntax.SyntacticParser;
-import com.robot.syntax.SyntacticTree;
 import com.util.Native;
 import com.util.Utility;
-import com.util.Utility.Printer;
 
 public class Sentence implements Serializable {
 
@@ -51,57 +39,6 @@ public class Sentence implements Serializable {
 	static final int INDEX_MULTIPLE = 3;
 
 	public static void main(String[] args) throws Exception {
-		Printer printer = new Printer(Utility.workingDirectory + "/corpus/debug.txt");
-		String seg[] = null;
-		String pos[] = null;
-		for (String inst : new Utility.Text(Utility.workingDirectory + "CORPUS/pos.txt")) {
-			if (inst.startsWith(";")) {
-				continue;
-			}
-			if (seg == null) {
-				seg = inst.split("\\s+");
-				continue;
-			}
-			if (pos == null) {
-				pos = inst.split("\\s+");
-
-				SyntacticTree tree = SyntacticParser.instance.parse(seg, pos);
-
-				//				AnomalyInspecter.Filter filter = AnomalyInspecter.containsIrregulation(tree);
-				//				if (filter != null) {
-				////					System.out.println(tree);
-				////					System.out.println("Anomaly Inspected : " + filter.regulation);
-				//					tree = SyntacticParser.instance.parseWithAdjustment(seg, pos);
-				//				}
-				//
-				if (tree != null) {
-					//					System.out.println(tree);
-					System.out.println(tree.toStringNonHierarchical());
-				} else {
-				}
-				seg = null;
-				pos = null;
-			}
-		}
-
-		for (String str : new Utility.Text(Utility.workingDirectory + "CORPUS/seg.txt")) {
-			seg = Utility.convertToSegmentation(str);
-			pos = POSTagger.instance.tag(seg);
-			SyntacticTree tree = SyntacticParser.instance.parse(seg, pos);
-
-			if (tree.containsIrregulation()) {
-				tree = SyntacticParser.instance.parseWithAdjustment(seg, pos);
-			}
-
-			if (tree != null) {
-				//				System.out.println(tree);
-				System.out.println(tree.toStringNonHierarchical());
-			} else {
-			}
-		}
-
-		//		System.out.println("error = " + error);
-		printer.close();
 	}
 
 	public String[] focus() {
@@ -125,36 +62,6 @@ public class Sentence implements Serializable {
 			}
 		}
 
-		return arr.toArray(new String[arr.size()]);
-	}
-
-	public String[] subject() {
-		ArrayList<String> arr = new ArrayList<String>();
-		for (SyntacticTree tree : tree.leftChildren) {
-			if (tree.dep.equals("suj")) {
-				// arr.addAll(tree.getWordSet());
-			}
-		}
-		for (SyntacticTree tree : tree.rightChildren) {
-			if (tree.dep.equals("suj")) {
-				// arr.addAll(tree.getWordSet());
-			}
-		}
-		return arr.toArray(new String[arr.size()]);
-	}
-
-	public String[] object() {
-		ArrayList<String> arr = new ArrayList<String>();
-		for (SyntacticTree tree : tree.leftChildren) {
-			if (tree.dep.equals("obj")) {
-				// arr.addAll(tree.getWordSet());
-			}
-		}
-		for (SyntacticTree tree : tree.rightChildren) {
-			if (tree.dep.equals("obj")) {
-				// arr.addAll(tree.getWordSet());
-			}
-		}
 		return arr.toArray(new String[arr.size()]);
 	}
 
@@ -182,14 +89,6 @@ public class Sentence implements Serializable {
 		this.sentence = Utility.convertSegmentationToOriginal(seg);
 	}
 
-	public Sentence(SyntacticTree tree) throws Exception {
-		this.seg = tree.getLEX();
-		this.pos = tree.getPOS();
-		this.dep = tree.getSyntacticTree();
-		this.tree = tree;
-		this.sentence = Utility.convertSegmentationToOriginal(seg);
-	}
-
 	public Sentence(String sentence, Protagonist protagonist) throws Exception {
 		this.sentence = sentence;
 		this.protagonist = protagonist;
@@ -201,53 +100,7 @@ public class Sentence implements Serializable {
 		this.speaker = speaker;
 	}
 
-	HashMap<String, Double> entropyMap() {
-		synchronized (this) {
-			if (entropyMap == null) {
-				String[] seg = seg();
-				String[] pos = pos();
-				HashMap<String, Double> posMap = new HashMap<String, Double>();
-				//			log.info("pos = " + Arrays.toString(pos));
-				//			log.info("seg = " + Arrays.toString(seg));
-				//			log.info("dep = " + Arrays.toString(dep));
-				//			log.info("posWeight = " + posWeight);
-				for (int i = 0; i < seg.length; ++i) {
-					Double obj = Constituent.entropyMap.get(pos[i]);
-					if (obj == null) {
-						throw new RuntimeException(pos[i] + " does not exist int posWeight.txt");
-					}
-
-					double weight = obj;
-					if (!posMap.containsKey(seg[i]) || posMap.get(seg[i]) < weight)
-						posMap.put(seg[i], weight);
-				}
-
-				//				HashMap<String, Double> depMap = new HashMap<String, Double>();
-				//				for (int i = 0; i < seg.length; ++i) {
-				//					Double obj;
-				//					if (dep[i].dep == null)
-				//						obj = posWeight.get("root");
-				//					else
-				//						obj = posWeight.get(dep[i].dep);
-				//					if (obj == null) {
-				//						throw new Exception(dep[i] + " does not exist int posWeight.txt");
-				//					}
-				//
-				//					double weight = obj;
-				//					if (!depMap.containsKey(seg[i]) || depMap.get(seg[i]) < weight)
-				//						depMap.put(seg[i], weight);
-				//				}
-
-				entropyMap = posMap;
-				//				for (Entry<String, Double> entry : depMap.entrySet()) {
-				//					entropyMap.put(entry.getKey(), entry.getValue() + entropyMap.get(entry.getKey()));
-				//				}
-			}
-			return entropyMap;
-		}
-	}
-
-	//	int id = -1;
+	// int id = -1;
 	public String sentence;
 	Protagonist protagonist;
 	String speaker;
@@ -256,45 +109,27 @@ public class Sentence implements Serializable {
 	 * indicate whether it is a question or an answer;
 	 */
 	transient QATYPE qatype;
-	//	int anomaly;
+	// int anomaly;
 	/**
 	 * confidence of judgment of QA type;
 	 */
 	transient double confidence;
-	transient SyntacticTree tree;
-	transient SyntacticTree[] dep;
 	transient String[] seg;
 	transient String[] pos;
 	transient HashMap<String, Double> entropyMap;
 
-	SyntacticTree getOriginalMathExp() throws Exception {
-		if (this.qatype != QATYPE.QUERY)
-			return null;
-		SyntacticTree subject = this.tree.getSubject();
-		if (subject != null && subject.pos.equals("O")) {
-			return subject;
-		}
-
-		SyntacticTree object = this.tree.getObject();
-		if (object != null && object.pos.equals("O")) {
-			return object;
-		}
-
-		return null;
-	}
-
 	public QATYPE qatype() throws Exception {
 		if (qatype == null) {
-			double score = Native.phatics(sentence);
+			double score = Native.phatic(sentence);
 			if (score < 0.5) {
 				qatype = QATYPE.NEUTRAL;
 				this.confidence = 1 - score;
-			} else {//score >= RNNPhaticsClassifier.threshold
-				this.confidence = Native.phatics(this.sentence);
+			} else {// score >= RNNPhaticsClassifier.threshold
+				this.confidence = Native.phatic(this.sentence);
 				if (confidence > 0.5) {
 					qatype = QATYPE.QUERY;
 					confidence = Math.sqrt(score * confidence);
-				} else {//if (confidence <= 0.5) {
+				} else {// if (confidence <= 0.5) {
 					qatype = QATYPE.REPLY;
 					confidence = Math.sqrt(score * (1 - confidence));
 				}
@@ -303,281 +138,26 @@ public class Sentence implements Serializable {
 		return qatype;
 	}
 
-	//	public String anomaly() throws Exception {
-	//		switch (this.anomaly) {
-	//		case INDEX_INTEGRITY:
-	//			return "INTEGRITY";
-	//		case INDEX_INCOMPLETE:
-	//			return "INCOMPLETE";
-	//		case INDEX_ANAPHORA:
-	//			return "ANAPHORA";
-	//		case INDEX_MULTIPLE:
-	//			return "MULTIPLE";
-	//		default:
-	//			throw new Exception("unknown index for anomaly.");
-	//		}
-	//	}
+	// public String anomaly() throws Exception {
+	// switch (this.anomaly) {
+	// case INDEX_INTEGRITY:
+	// return "INTEGRITY";
+	// case INDEX_INCOMPLETE:
+	// return "INCOMPLETE";
+	// case INDEX_ANAPHORA:
+	// return "ANAPHORA";
+	// case INDEX_MULTIPLE:
+	// return "MULTIPLE";
+	// default:
+	// throw new Exception("unknown index for anomaly.");
+	// }
+	// }
 
 	public String toString() {
 		return sentence;
 	}
 
-	public int tokenLength() {
-		String[] pos = pos();
-		int cnt = 0;
-		for (String p : pos) {
-			switch (p) {
-			case "IJ":
-			case "PU":
-				break;
-			default:
-				++cnt;
-				break;
-			}
-		}
-		return cnt;
-	}
-
-	public String[] seg() {
-		synchronized (this) {
-			if (seg == null) {
-				int length = sentence.length();
-				for (; length > 0; --length) {
-					if (Utility.endOfSentencePunctuation.indexOf(sentence.charAt(length - 1)) < 0) {
-						break;
-					}
-				}
-
-				if (length == 0) {
-					seg = new String[] { sentence };
-				} else if (length < sentence.length()) {
-					seg = CWSTagger.instance.tag(sentence.substring(0, length));
-					seg = Arrays.copyOf(seg, seg.length + 1);
-					seg[seg.length - 1] = sentence.substring(length);
-				} else {
-					seg = CWSTagger.instance.tag(sentence);
-				}
-
-			}
-			return seg;
-		}
-	}
-
-	public String[] pos() {
-		synchronized (this) {
-			if (pos == null) {
-				int length = seg().length;
-				for (; length > 0; --length) {
-					if (Utility.endOfSentencePunctuation.indexOf(seg[length - 1].charAt(0)) < 0) {
-						break;
-					}
-				}
-
-				if (length < seg.length) {
-					pos = POSTagger.instance.tag(Arrays.copyOf(seg, length));
-					pos = Arrays.copyOf(pos, seg.length);
-					for (; length < seg.length; ++length) {
-						pos[length] = "PU";
-					}
-
-				} else {
-					pos = POSTagger.instance.tag(seg);
-				}
-
-			}
-			return pos;
-		}
-	}
-
-	public SyntacticTree tree() throws Exception {
-		synchronized (this) {
-			if (tree == null) {
-				String[] seg = seg();
-				String[] pos = pos();
-
-				boolean[] indicator = new boolean[seg.length];
-				for (int j = 0; j < seg.length; ++j) {
-					switch (seg[j]) {
-					case "您好":
-					case "你好":
-					case "请问":
-						if (pos[j].equals("IJ")) {
-							indicator[j] = true;
-							break;
-						}
-					}
-				}
-
-				for (int j = 0; j < seg.length; ++j) {
-					switch (pos[j]) {
-					case "IJ":
-					case "PU":
-						indicator[j] = true;
-						continue;
-					default:
-						break;
-					}
-					break;
-				}
-
-				for (int j = pos.length - 1; j >= 0; --j) {
-					if (!pos[j].equals("PU")) {
-						break;
-					}
-					switch (seg[j]) {
-					case "\"":
-					case "\'":
-					case "”":
-					case "“":
-					case "’":
-					case "‘":
-						break;
-					default:
-						indicator[j] = true;
-						continue;
-					}
-					break;
-				}
-				int size = 0;
-				for (int i = 0; i < indicator.length; i++) {
-					if (indicator[i])
-						++size;
-				}
-
-				if (size == 0 || indicator.length == size) {
-					tree = SyntacticParser.instance.parse(seg, pos);
-				} else {
-					size = indicator.length - size;
-					String segArr[] = new String[size];
-					//					String posArr[] = new String[size];
-					int index = 0;
-					for (int i = 0; i < indicator.length; i++) {
-						if (!indicator[i]) {
-							segArr[index] = seg[i];
-							//							posArr[index] = pos[i];
-							++index;
-						}
-					}
-					String posArr[] = POSTagger.instance.tag(segArr);
-					tree = SyntacticParser.instance.parse(segArr, posArr);
-
-					for (int i = 0; i < indicator.length; i++) {
-						if (!indicator[i])
-							break;
-						if (seg[i].equals("请问")) {
-							tree.preppend("请问", "IJ", "ij");
-							segArr = Utility.copier("请问", segArr);
-							posArr = Utility.copier("IJ", posArr);
-							break;
-						}
-					}
-					for (int i = indicator.length - 1; i >= 0; --i) {
-						if (!indicator[i])
-							break;
-						if (seg[i].matches("[?？]+")) {
-							tree.append("?", "PU", "pu");
-							segArr = Utility.copier(segArr, "?");
-							posArr = Utility.copier(posArr, "PU");
-						}
-					}
-
-					this.seg = segArr;
-					this.pos = posArr;
-				}
-			}
-			return tree;
-		}
-	}
-
-	public SyntacticTree[] dep() throws Exception {
-		synchronized (this) {
-			if (dep == null) {
-				dep = tree().getSyntacticTree();
-			}
-			return dep;
-		}
-	}
-
-	double lengthSimilarity(Sentence sentence) {
-		int tokenLength = tokenLength();
-		int _tokenLength = sentence.tokenLength();
-		if (tokenLength + _tokenLength == 0)
-			return 1;
-		return 1 - Math.abs(tokenLength - _tokenLength) * 1.0 / (tokenLength + _tokenLength);
-	}
-
-	double asymmetricInformation(Sentence sentence) throws Exception {
-		double mutualInformation = 0;
-		for (Entry<String, Double> entry : entropyMap().entrySet()) {
-			double maxSimilarity = -1;
-			double information = -1;
-			for (Entry<String, Double> entry1 : sentence.entropyMap().entrySet()) {
-				double similarity = Thesaurus.instance.similarity(entry.getKey(), entry1.getKey());
-				if (similarity > maxSimilarity) {
-					maxSimilarity = similarity;
-					information = entry1.getValue();
-				}
-			}
-			information = Math.min(entry.getValue(), information) * maxSimilarity * maxSimilarity;
-			mutualInformation += information;
-		}
-		return mutualInformation;
-	}
-
 	double entropyInformation = Double.NaN;
-
-	public double entropyInformation() {
-		if (entropyInformation == entropyInformation) {
-			return entropyInformation;
-		}
-
-		entropyInformation = 0;
-		for (Entry<String, Double> entry1 : entropyMap().entrySet()) {
-			entropyInformation += entry1.getValue();
-		}
-
-		return entropyInformation;
-	}
-
-	double mutualInformation(Sentence sentence) throws Exception {
-		return (asymmetricInformation(sentence) + sentence.asymmetricInformation(this)) / 2;
-	}
-
-	// |A ∩ B|/|A ∪ B|
-	double jaccardSimilarity(Sentence sentence) throws Exception {
-		double com = this.mutualInformation(sentence);
-		return com / (entropyInformation() + sentence.entropyInformation() - com);
-	}
-
-	// double norm() {
-	// double norm = 0;
-	// for (Entry<String, Double> entry : this.semanticVector.entrySet()) {
-	// norm += entry.getValue() * entry.getValue();
-	// }
-	// return norm;
-	// }
-
-	// double cosineSimilarity(Sentence sentence) {
-	// double similarity = 0;
-	// for (Entry<String, Double> entry : semanticVector.entrySet()) {
-	// if (!sentence.semanticVector.containsKey(entry.getKey()))
-	// continue;
-	// similarity += sentence.semanticVector.get(entry.getKey()) *
-	// entry.getValue();
-	// }
-	//
-	// return similarity;
-	// }
-
-	/**
-	 * return the Levenshtein Distance between the two sentences;
-	 * 
-	 * @param sentence
-	 * @return
-	 */
-	public double LevenshteinDistance(Sentence sentence) {
-		return EditDistanceLevenshtein.instance.sim(this.sentence.replaceAll("[\\pP\\pS\\s]", ""), sentence.sentence.replaceAll("[\\pP\\pS\\s]", ""));
-	}
 
 	/**
 	 * the semantic similarity of two sentences can be negative;
@@ -586,34 +166,15 @@ public class Sentence implements Serializable {
 	 * @return
 	 * @throws Exception
 	 */
-	public double morphologicalSimilarity(Sentence sentence) throws Exception {
-		double lengthSimilarity = lengthSimilarity(sentence);
-		double levenshteinDistance = LevenshteinDistance(sentence);
-		double jaccardSimilarity = jaccardSimilarity(sentence);
-		return lengthSimilarity * 0.05 + levenshteinDistance * 0.45 + jaccardSimilarity * 0.5;
-	}
 
-	public double questionSimilarity(Sentence sentence) throws Exception {
-		double semanticSimilarity;
-		try {			
-			semanticSimilarity = Native.similarity(this.sentence, sentence.sentence);
+	public double similarity(Sentence sentence) throws Exception {
+		try {
+			return Native.similarity(this.sentence, sentence.sentence);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			semanticSimilarity = 0.1;
+			return 0.1;
 		}
-
-		double morphologicalSimilarity = morphologicalSimilarity(sentence);
-		return Math.sqrt(0.5 * morphologicalSimilarity * morphologicalSimilarity + 0.5 * semanticSimilarity * semanticSimilarity);
-		//		return morphologicalSimilarity;
-	}
-
-	public double answerSimilarity(Sentence sentence) throws Exception {
-		double morphologicalSimilarity = morphologicalSimilarity(sentence);
-		//		double semanticSimilarity = declarativeSemanticSimilarity(sentence);
-		//		if (semanticSimilarity > morphologicalSimilarity)
-		//			return semanticSimilarity;
-		return morphologicalSimilarity;
 
 	}
 
@@ -627,19 +188,6 @@ public class Sentence implements Serializable {
 		if (anomaly.equals("MULTIPLE"))
 			return INDEX_MULTIPLE;
 		return -1;
-	}
-
-	static int anomalyType(String[][] morpheme, SyntacticTree featureanomaly) {
-		if (morpheme[0].length == 1) {
-			return INDEX_INCOMPLETE;
-		}
-		if (featureanomaly == null) {
-			return INDEX_INCOMPLETE;
-		}
-		if (featureanomaly.match("主语").size() == 0) {
-			return INDEX_INCOMPLETE;
-		}
-		return INDEX_INTEGRITY;
 	}
 
 	static int find_question_sequential(Sentence[] history, int i) {
@@ -699,32 +247,6 @@ public class Sentence implements Serializable {
 		return Conversation.decompile(sentence, protagonist.ordinal());
 	}
 
-	boolean isIncompleteQuestion() {
-		String[] pos = pos();
-		int realWordCnt = 0;
-		for (int i = 0; i < pos.length; ++i) {
-			switch (pos[i]) {
-			case "PU":
-			case "IJ":
-			case "AS":
-				continue;
-			}
-			++realWordCnt;
-		}
-
-		if (realWordCnt > 2)
-			return false;
-		return false;
-	}
-
-	boolean topGeneration(int j) {
-		return dep[j].parent == null || dep[j].parent.parent == null;
-	}
-
-	boolean buriedGeneration(int j) {
-		return dep[j].parent != null && dep[j].parent.parent != null;
-	}
-
 	void addFeature(HashSet<String> set, int i, int... arr) {
 		String featurePos = seg[i] + " " + pos[i];
 		String featurePosPos = pos[i];
@@ -760,186 +282,11 @@ public class Sentence implements Serializable {
 		set.add(featureSeg);
 	}
 
-	static String modalVerb[] = { "want", "need", "must", "need", "will", "should", "could" };
+	// we should determine the parents of the interrogative, whether there are
+	// multiple verbs above.
 
-	String modalVerb(int j) {
-		for (String md : modalVerb) {
-			if (Thesaurus.instance.synonymous(seg[j], md)) {
-				return md;
-			}
-		}
-		return null;
+	boolean isIncompleteQuestion() {
+		return this.sentence.length() <= 3;
 	}
 
-	//	we should determine the parents of the interrogative, whether there are multiple verbs above.
-	boolean isInterrogative(int j) {
-		SyntacticTree que = dep[j];
-		SyntacticTree it = que;
-		while (it != null) {
-			it = it.parent;
-			if (it != null && it.pos.equals("CS") && (Thesaurus.instance.equivalent(it.seg, "however") || Thesaurus.instance.equivalent(it.seg, "if"))) {
-				return false;
-			}
-		}
-		it = que;
-		ArrayList<SyntacticTree> posArr = new ArrayList<SyntacticTree>();
-		while (it != null) {
-			it = it.parent;
-			if (it != null) {
-				switch (it.pos) {
-				case "VT":
-				case "VI":
-				case "VC":
-				case "VA":
-					posArr.add(it);
-				}
-			}
-		}
-		switch (posArr.size()) {
-		case 0:
-			return true;
-		case 1:
-			SyntacticTree verb = posArr.get(0);
-			//网上查到多少就多少的
-			switch (verb.seg) {
-			case "就是":
-				if (que.pos.equals("MD")) {
-					return true;
-				}
-				if (que.dep.equals("adj"))
-					return true;
-			case "就":
-				return false;
-			}
-			return true;
-		case 2:
-			verb = posArr.get(0);
-			switch (verb.pos) {
-			case "VC":
-				if (Thesaurus.instance.synonymous(posArr.get(1).seg, "tell"))
-					return true;
-				//这个是按客票销售来开放舱位的，网上查到多少就多少的，网上的价格是已优惠的
-				switch (verb.seg) {
-				case "就是":
-				case "就":
-					return false;
-				}
-				//是不是你们公司把我的资料泄露了
-				if (verb.dep.equals("adv"))
-					return true;
-				//是谁帮他们办理购买的机票
-				if (verb.seg.equals("是")) {
-					if (verb.dep.equals("obj")) {//但是我不知道是什么型号
-						return false;
-					}
-					if (verb.leftChildren.isEmpty()) {
-						return true;
-					}
-				}
-				return false;
-			case "VI":
-			case "VT":
-			case "VA":
-				switch (verb.dep) {
-				case "de":
-					switch (verb.parent.dep) {
-					case "obj":
-					case "suj":
-						return false;
-					}
-					return true;
-				case "obj":
-				case "suj":
-					return false;
-				case "va":
-					switch (verb.parent.seg) {
-					case "是":
-						//那取消了航空公司是怎么安排呢
-						return true;
-					default:
-						return false;
-					}
-				case "JJ"://具体代金劵发放多少张这个无法确认
-					switch (verb.parent.dep) {
-					case "obj":
-					case "suj":
-						return false;
-					}
-				}
-
-				return true;
-			}
-		default:
-			return false;
-		}
-	}
-
-	boolean isPredicativeInterrogativeStruct(int j) {
-		if (dep[j].dep == null || !dep[j].dep.equals("adj") || j == 0 || dep[j - 1].parent != dep[j].parent)
-			return false;
-		return dep[j - 1].dep.equals("suj");
-	}
-
-	enum InterrogativeVerb {
-		provide, tell, ask, query, know, send, business;
-
-		static InterrogativeVerb construct(String seg) {
-			for (InterrogativeVerb verb : InterrogativeVerb.values()) {
-				if (Thesaurus.instance.synonymous(seg, verb.toString())) {
-					return verb;
-
-				}
-			}
-			return null;
-		}
-	}
-
-	enum AuxiliaryVerb {
-		want, please, could, help;
-		static AuxiliaryVerb construct(String seg) {
-			for (AuxiliaryVerb verb : AuxiliaryVerb.values()) {
-				if (Thesaurus.instance.synonymous(seg, verb.toString())) {
-					return verb;
-
-				}
-			}
-			return null;
-		}
-
-	}
-
-	public Sentence[] splitSentence() {
-		ArrayList<String> sent = new ArrayList<String>();
-		ArrayList<Sentence> paragraph = new ArrayList<Sentence>();
-		for (String lexeme : this.seg()) {
-			sent.add(lexeme);
-			switch (lexeme.charAt(0)) {
-			case '.':
-			case '。':
-
-			case ';':
-			case '；':
-
-			case '!':
-			case '！':
-
-			case '?':
-			case '？':
-
-			case '\r':
-			case '\n':
-				paragraph.add(new Sentence(Utility.toArrayString(sent)));
-				sent.clear();
-				break;
-			default:
-
-			}
-		}
-
-		if (!sent.isEmpty()) {
-			paragraph.add(new Sentence(Utility.toArrayString(sent)));
-			sent.clear();
-		}
-		return paragraph.toArray(new Sentence[paragraph.size()]);
-	}
 }
