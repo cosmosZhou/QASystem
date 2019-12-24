@@ -870,7 +870,7 @@ public class Repertoire {
 	 * @return
 	 * @throws Exception
 	 */
-	public ArrayList<AnsQuintuple> query(final String questionOriginal) throws Exception {
+	public ArrayList<AnsQuintuple> search(final String questionOriginal) throws Exception {
 		Timer timer = new Timer();
 		// log.info("questionOriginal = " + questionOriginal);
 		ArrayList<AnsQuintuple> res = new ArrayList<AnsQuintuple>();
@@ -1988,27 +1988,6 @@ public class Repertoire {
 				return null;
 			}
 		}.execute();
-	}
-
-	public JSONArray search(String questionOriginal) throws Exception {
-		return toJSONObject(query(questionOriginal));
-	}
-
-	static public JSONArray toJSONObject(ArrayList<AnsQuintuple> arr) {
-		JSONArray jsonArray = new JSONArray();
-		DecimalFormat df = new DecimalFormat("#.00");
-		String date = Utility.toString(new Date());
-		for (Repertoire.AnsQuintuple quintuplet : arr) {
-			JSONObject object = new JSONObject();
-			object.put("answer", quintuplet.answer.sentence);
-			object.put("confidence", df.format((int) (quintuplet.confidence * 100.0 * 100) / 100.00d));
-			object.put("recommendedFAQ", String.valueOf(quintuplet.faqid));
-			object.put("time", date);
-			object.put("respondent", quintuplet.respondent == null ? "" : quintuplet.respondent);
-			object.put("origin", QACouplet.toString(quintuplet.origin));
-			jsonArray.add(object);
-		}
-		return jsonArray;
 	}
 
 	void deletePhatics() throws Exception {

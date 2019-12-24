@@ -17,6 +17,7 @@ import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.robot.Repertoire;
 import com.robot.QACouplet;
 
@@ -27,21 +28,25 @@ import com.util.Utility;
 import com.util.Utility.Couplet;
 
 //121.43.150.14  root   clienT1!2019  ssh:22
+//http://localhost:8080/QASystem/Knowledge/main
+//http://localhost:8080/QASystem/Knowledge/phatic/你们公司有些什么业务
+//http://localhost:8080/QASystem/Knowledge/qatype/你们公司业务有哪些
+//http://localhost:8080/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
+//http://localhost:8080/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有些什么业务/海南航空等
+//http://localhost:8080/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有什么业务/信诚人寿等
+//http://localhost:8080/QASystem/Knowledge/search/00000000000000000000000000000000/你们公司有些啥业务
+//http://121.43.150.14:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
+//http://121.40.130.192:8080/QASystem/Knowledge/methodName?parameterName0=aaa&parameterName1=bbb
+//http://121.40.130.192:8080/QASystem/Knowledge/methodName/aaa/bbb
+//
+//tail -100f tomcat/logs/catalina.out 
+//sh tomcat/bin/startup.sh python3
+//solution/pytext/gunicorn.py --cpp=eigen
+//
+
 /**
- * https://blog.csdn.net/qq_38685503/article/details/82495083 
-the way to invoke the method:
-
-http://localhost:8080/QASystem/Knowledge/main
-http://localhost:8080/QASystem/Knowledge/phatic/你们公司有些什么业务
-http://localhost:8080/QASystem/Knowledge/qatype/你们公司业务有哪些
-http://localhost:8080/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
-http://121.43.150.14:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
-http://121.40.130.192:8080/QASystem/Knowledge/methodName?parameterName0=aaa&parameterName1=bbb
-http://121.40.130.192:8080/QASystem/Knowledge/methodName/aaa/bbb
-
-  tail -100f tomcat/logs/catalina.out  
-  sh tomcat/bin/startup.sh
-  python3 solution/pytext/gunicorn.py --cpp=eigen  
+ * https://blog.csdn.net/qq_38685503/article/details/82495083 the way to invoke
+ * the method:
  * 
  * @author Cosmos
  *
@@ -84,13 +89,13 @@ public class Knowledge {
 	@Path("/searchForQuestionByKeywords")
 	@Produces(MediaType.TEXT_PLAIN)
 	public String searchForQuestionByKeywordsGET(@Context HttpServletRequest request) {
-		return this.searchPOST(request);
+		return this.searchForQuestionByKeywordsPOST(request);
 	}
 
 	@POST
 	@Path("/search")
 	@Produces(MediaType.TEXT_PLAIN)
-	public String searchPOST(@Context HttpServletRequest request) {
+	public String search(@Context HttpServletRequest request) {
 
 		// companyPk
 		String companyPk = request.getParameter("companyPk");
@@ -104,8 +109,7 @@ public class Knowledge {
 		try {
 			question = URLDecoder.decode(question, "UTF-8");
 			log.info("question = " + question + " with companyPk = " + companyPk);
-			JSONArray jsonArray = QASystem.instance.getRepertoire(companyPk).search(question);
-			result = URLEncoder.encode(jsonArray.toJSONString(), "UTF-8");
+			return Utility.jsonify(QASystem.instance.getRepertoire(companyPk).search(question));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -114,10 +118,10 @@ public class Knowledge {
 	}
 
 	@GET
-	@Path("/search")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String searchGET(@Context HttpServletRequest request) {
-		return this.searchPOST(request);
+	@Path("/search/{companyPk}/{question}")
+	@Produces("text/plain;charset=utf-8")
+	public String search(@PathParam("companyPk") String companyPk, @PathParam("question") String question) throws JsonProcessingException, Exception {
+		return Utility.jsonify(QASystem.instance.getRepertoire(companyPk).search(question));
 	}
 
 	@POST
@@ -222,8 +226,9 @@ public class Knowledge {
 	@GET
 	@Path("update/{company_pk}/{question}/{answer}")
 	@Produces("text/plain;charset=utf-8")
-	public String update(@PathParam("company_pk") String company_pk, @PathParam("question") String question, @PathParam("answer") String answer) throws Exception {
-		return String.valueOf(Native.similarity(question, answer));
+	public String update(@PathParam("company_pk") String company_pk, @PathParam("question") String question,
+			@PathParam("answer") String answer) throws Exception {
+		return String.valueOf(QASystem.instance.update(company_pk, question, answer));
 	}
 
 	@POST
@@ -441,7 +446,7 @@ public class Knowledge {
 		// excelFile
 		String httpPath = request.getParameter("excelFile");
 
-		java.io.File excelDiskFileToBeDeleted = null;
+//		java.io.File excelDiskFileToBeDeleted = null;
 
 		JSONObject object = new JSONObject();
 		try {
@@ -452,7 +457,7 @@ public class Knowledge {
 
 			if (httpPath.toLowerCase().startsWith("http://")) {
 				excelDisk = Utility.readFileFromURL(httpPath);
-				excelDiskFileToBeDeleted = new java.io.File(excelDisk);
+//				excelDiskFileToBeDeleted = new java.io.File(excelDisk);
 			} else {
 				excelDisk = httpPath;
 			}
@@ -1339,7 +1344,7 @@ public class Knowledge {
 	@GET
 	@Path("main")
 	@Produces("text/plain;charset=utf-8")
-	public String main() throws Exception {		
+	public String main() throws Exception {
 		return String.valueOf(Native.main());
 	}
 
