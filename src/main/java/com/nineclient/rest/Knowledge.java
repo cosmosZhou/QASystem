@@ -27,7 +27,6 @@ import com.util.Utility;
 import com.util.Utility.Couplet;
 
 //121.43.150.14  root   clienT1!2019  ssh:22
-//27.115.49.154  root  clienT1!    数据库端口：8806  数据库comos
 /**
  * https://blog.csdn.net/qq_38685503/article/details/82495083
  * the way to invoke the method;
@@ -1332,4 +1331,12 @@ public class Knowledge {
 	public String similarity(@Context HttpServletRequest request) throws Exception {
 		return String.valueOf(Native.similarity(request.getParameter("x"), request.getParameter("y")));
 	}
+
+	@GET
+	@Path("main")
+	@Produces("text/plain;charset=utf-8")
+	public String main() throws Exception {		
+		return String.valueOf(Native.main());
+	}
+
 }
