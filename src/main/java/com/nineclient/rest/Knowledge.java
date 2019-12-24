@@ -220,10 +220,10 @@ public class Knowledge {
 	}
 
 	@GET
-	@Path("/update")
-	@Produces(MediaType.TEXT_PLAIN)
-	public String updateGET(@Context HttpServletRequest request) {
-		return this.updatePOST(request);
+	@Path("update/{company_pk}/{question}/{answer}")
+	@Produces("text/plain;charset=utf-8")
+	public String update(@PathParam("company_pk") String company_pk, @PathParam("question") String question, @PathParam("answer") String answer) throws Exception {
+		return String.valueOf(Native.similarity(question, answer));
 	}
 
 	@POST

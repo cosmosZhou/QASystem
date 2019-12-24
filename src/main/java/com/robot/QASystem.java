@@ -97,6 +97,12 @@ public class QASystem {
 		});
 	}
 
+	public int update(String company, String question, String answer) throws Exception {
+		String arr[] = { "CUSTOMER: " + question, "OPERATOR: " + answer };
+
+		return getRepertoire(company).update(Conversation.decompile(arr));
+	}
+
 	public void updateTeletext(final String company, final String pk, final String title, final String description,
 			final String content) throws Exception {
 

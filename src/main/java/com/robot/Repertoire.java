@@ -251,8 +251,10 @@ public class Repertoire {
 		this.threshold = threshold;
 	}
 
-	public void update(Conversation conversation) throws Exception {
-		update(conversation.compile());
+	public int update(Conversation conversation) throws Exception {
+		ArrayList<QACouplet> array = conversation.compile(); 
+		update(array);
+		return array.size();
 	}
 
 	void updateTeletext(String pk, String title, String description, String content) throws Exception {
@@ -312,8 +314,8 @@ public class Repertoire {
 		}
 	}
 
-	void update(String content) throws Exception {
-		update(new Conversation(content));
+	int update(String content) throws Exception {
+		return update(new Conversation(content));
 	}
 
 	// procedure for knowledge updating
