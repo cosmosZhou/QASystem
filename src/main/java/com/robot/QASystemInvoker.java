@@ -102,7 +102,7 @@ public class QASystemInvoker {
 		// String question = "公司有什么案例";
 		String question = "我昨天开的户为什么现在还没有短信通过通知呢？";
 
-		ArrayList<AnsQuintuple> arr = QASystem.instance.getRepertoire(company_pk).query(question);
+		ArrayList<AnsQuintuple> arr = QASystem.instance.getRepertoire(company_pk).search(question);
 
 		for (AnsQuintuple obj : arr) {
 			String answer = obj.answer.sentence;

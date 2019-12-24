@@ -32,7 +32,7 @@ public class Native {
 
 	public native static double[] batch_similarity(String[] x, String[] y);
 
-	public native static int asm6args(int rcx, int rdx, int r8, int r9, int fifthArg, int sixthArg);
+	public native static int sum8args(int rcx, int rdx, int r8, int r9, int fifthArg, int sixthArg, int seventhArg, int eighthArg);
 
 	public native static double relu(double rcx);
 
@@ -56,7 +56,7 @@ public class Native {
 		String _input = Native.reverse(input);
 		System.out.println(_input);
 
-		int sum = Native.asm6args(1, 2, 3, 4, 5, 6);
+		int sum = Native.sum8args(1, 2, 3, 4, 5, 6, 7, 8);
 		System.out.println("asm_6args, sum = " + sum);
 
 		Native.displayHelloWorld();

@@ -56,7 +56,7 @@ public class QASystem {
 		// quest = "怎么联系你们客服";
 		log.info("question: " + quest);
 
-		ArrayList<AnsQuintuple> res = QASystem.instance.getRepertoire(company_pk).query(quest);
+		ArrayList<AnsQuintuple> res = QASystem.instance.getRepertoire(company_pk).search(quest);
 		if (res.size() == 0) {
 			log.info("no answers.");
 		} else {
