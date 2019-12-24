@@ -1,9 +1,6 @@
 package com.robot;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
 import com.util.Native;
 import com.util.Utility;
@@ -41,30 +38,6 @@ public class Sentence implements Serializable {
 	public static void main(String[] args) throws Exception {
 	}
 
-	public String[] focus() {
-		ArrayList<String> arr = new ArrayList<String>();
-
-		for (int i = 0; i < seg.length; ++i) {
-			if (pos[i].equals("QUE")) {
-				arr.add(seg[i]);
-			}
-		}
-
-		return arr.toArray(new String[arr.size()]);
-	}
-
-	public String[] interrogative() {
-		ArrayList<String> arr = new ArrayList<String>();
-
-		for (int i = 0; i < seg.length; ++i) {
-			if (pos[i].equals("QUE")) {
-				arr.add(seg[i]);
-			}
-		}
-
-		return arr.toArray(new String[arr.size()]);
-	}
-
 	@Override
 	public int hashCode() {
 		return sentence.hashCode();
@@ -82,11 +55,6 @@ public class Sentence implements Serializable {
 
 	public Sentence(String sentence) throws Exception {
 		this.sentence = sentence;
-	}
-
-	public Sentence(String seg[]) {
-		this.seg = seg;
-		this.sentence = Utility.convertSegmentationToOriginal(seg);
 	}
 
 	public Sentence(String sentence, Protagonist protagonist) throws Exception {
@@ -114,9 +82,6 @@ public class Sentence implements Serializable {
 	 * confidence of judgment of QA type;
 	 */
 	transient double confidence;
-	transient String[] seg;
-	transient String[] pos;
-	transient HashMap<String, Double> entropyMap;
 
 	public QATYPE qatype() throws Exception {
 		if (qatype == null) {
@@ -125,7 +90,7 @@ public class Sentence implements Serializable {
 				qatype = QATYPE.NEUTRAL;
 				this.confidence = 1 - score;
 			} else {// score >= RNNPhaticsClassifier.threshold
-				this.confidence = Native.phatic(this.sentence);
+				this.confidence = Native.qatype(this.sentence);
 				if (confidence > 0.5) {
 					qatype = QATYPE.QUERY;
 					confidence = Math.sqrt(score * confidence);
@@ -245,41 +210,6 @@ public class Sentence implements Serializable {
 
 	public String decompile() throws Exception {
 		return Conversation.decompile(sentence, protagonist.ordinal());
-	}
-
-	void addFeature(HashSet<String> set, int i, int... arr) {
-		String featurePos = seg[i] + " " + pos[i];
-		String featurePosPos = pos[i];
-		for (int index : arr) {
-			if (i + index >= 0 && i + index < pos.length) {
-				featurePos += "|" + index + "=" + pos[i + index];
-				featurePosPos += "|" + index + "=" + pos[i + index];
-			}
-		}
-		set.add(featurePos);
-		set.add(featurePosPos);
-	}
-
-	void addFeatureSeg(HashSet<String> set, int i, int... arr) {
-		String featureSeg = seg[i];
-
-		for (int index : arr) {
-			if (i + index > 0 && i + index < seg.length) {
-				featureSeg += "|" + index + "=" + seg[i + index];
-			}
-		}
-		set.add(featureSeg);
-	}
-
-	void addFeaturePos(HashSet<String> set, int i, int... arr) {
-		String featureSeg = pos[i];
-
-		for (int index : arr) {
-			if (i + index > 0 && i + index < pos.length) {
-				featureSeg += "|" + index + "=" + pos[i + index];
-			}
-		}
-		set.add(featureSeg);
 	}
 
 	// we should determine the parents of the interrogative, whether there are

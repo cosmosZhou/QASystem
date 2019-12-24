@@ -28,13 +28,17 @@ import com.util.Utility.Couplet;
 
 //121.43.150.14  root   clienT1!2019  ssh:22
 /**
- * https://blog.csdn.net/qq_38685503/article/details/82495083
- * the way to invoke the method;
- * localhost:8080/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
- * 121.43.150.14:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
- * http://121.40.130.192:8080/QASystem/Knowledge/methodName?parameterName0=aaa&parameterName1=bbb
- * http://121.40.130.192:8080/QASystem/Knowledge/methodName/aaa/bbb
- *
+ * https://blog.csdn.net/qq_38685503/article/details/82495083 
+the way to invoke the method:
+
+http://localhost:8080/QASystem/Knowledge/main
+http://localhost:8080/QASystem/Knowledge/phatic/你们公司有些什么业务
+http://localhost:8080/QASystem/Knowledge/qatype/你们公司业务有哪些
+http://localhost:8080/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
+http://121.43.150.14:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
+http://121.40.130.192:8080/QASystem/Knowledge/methodName?parameterName0=aaa&parameterName1=bbb
+http://121.40.130.192:8080/QASystem/Knowledge/methodName/aaa/bbb
+
   tail -100f tomcat/logs/catalina.out  
   sh tomcat/bin/startup.sh
   python3 solution/pytext/gunicorn.py --cpp=eigen  
