@@ -13,6 +13,8 @@ public class Native {
 	public native static int gcdinttemplate(int ecx, int edx);
 
 	public native static long gcdlongtemplate(long ecx, long edx);
+	
+	public native static int main();
 
 	public native static int service(String text);
 

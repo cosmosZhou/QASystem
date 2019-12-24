@@ -18,7 +18,8 @@ import com.robot.FAQ;
 import com.robot.QACouplet;
 import com.robot.QACouplet.Origin;
 import com.util.Utility.Couplet;
-//27.115.49.154  root  clienT1!    数据库端口：8806  数据库comos
+
+//mysql -h27.115.49.154 -uroot -P8806 -Dcomos --password=clienT1!
 public class MySQL extends DataSource {
 	private static Logger log = Logger.getLogger(MySQL.class);
 
@@ -33,21 +34,14 @@ public class MySQL extends DataSource {
 
 				String port;
 				if (PropertyConfig.config.hasOption(section, "port")) {
-					port = PropertyConfig.config.get(section, "port");	
-				}
-				else {
+					port = PropertyConfig.config.get(section, "port");
+				} else {
 					port = "3306";
 				}
-				
 
-				String url;
-				if (PropertyConfig.config.hasOption(section, "database")) {
-					String database = PropertyConfig.config.get(section, "database");
-					url = String.format("jdbc:mysql://%s:%s/%s?", host, port, database);
+				String database = PropertyConfig.config.get(section, "database");
+				String url = String.format("jdbc:mysql://%s:%s/%s?", host, port, database);
 
-				} else {
-					url = String.format("jdbc:mysql://%s:%s?", host, port);
-				}
 				String user = PropertyConfig.config.get(section, "user");
 				String password = PropertyConfig.config.get(section, "password");
 				if (SystemUtils.IS_OS_WINDOWS) {
