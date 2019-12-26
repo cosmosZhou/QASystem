@@ -40,6 +40,7 @@ import com.util.Utility.Couplet;
 //http://121.43.150.14:9000/QASystem/Knowledge/qatype/你们公司业务有哪些
 //http://121.43.150.14:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
 //http://121.43.150.14:9000/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有些什么业务/海南航空等
+//http://121.43.150.14:9000/QASystem/Knowledge/search/00000000000000000000000000000000/你们公司有些啥业务
 //
 //tail -100f tomcat/logs/catalina.out 
 //sh tomcat/bin/startup.sh python3
