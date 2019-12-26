@@ -44,6 +44,10 @@ public class MySQL extends DataSource {
 
 				String user = PropertyConfig.config.get(section, "user");
 				String password = PropertyConfig.config.get(section, "password");
+				if (password.startsWith("\"")) {
+					password = password.substring(1, password.length() - 1);
+				}
+				
 				if (SystemUtils.IS_OS_WINDOWS) {
 					String serverTimezone = "UTC";
 //				String serverTimezone = "GMT";
@@ -71,11 +75,11 @@ public class MySQL extends DataSource {
 	}
 
 	public MySQL(String url, String user, String password) {
-		super(url, user, password, Driver.mysql);
+		super(Driver.mysql, url, user, password);
 	}
 
 	public MySQL(String url, String user, String password, String serverTimezone) {
-		super(url, user, password, Driver.mysql, serverTimezone);
+		super(Driver.mysql, url, user, password, serverTimezone);
 	}
 
 	// of format : dddd-dd-dd
@@ -398,14 +402,6 @@ public class MySQL extends DataSource {
 
 		deleteExecutive.executeBatch();
 		insertExecutive.executeBatch();
-	}
-
-	public static class TransferRecord {
-		public String operator;
-		public String trench;
-		public String time;
-		public int outDegree;
-		public int inDegree;
 	}
 
 	/**

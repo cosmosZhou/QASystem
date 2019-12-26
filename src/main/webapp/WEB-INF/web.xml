@@ -22,12 +22,14 @@
 		<servlet-name>resteasy-servlet</servlet-name>
 		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
 	</servlet>
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+	
 	<servlet-mapping>
 		<servlet-name>resteasy-servlet</servlet-name>
-		<url-pattern>/*</url-pattern>
+		<url-pattern>/Knowledge/*</url-pattern>
 	</servlet-mapping>
-
-	<welcome-file-list>
-		<welcome-file>/WEB-INF/index.jsp</welcome-file>
-	</welcome-file-list>
+	
 </web-app>

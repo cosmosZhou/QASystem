@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+  html,body{
+    width:100%;
+    height:100%;
+    overflow: auto;
+  }
+  </style>
+</head>
+<body>
+  <div class='workTask phatic'>
+    <div class='label'>phatic</div>
+    x:<input type="text" class='x'><br>
+    result:<input type="text" class='result' disabled>
+  </div>
+  <div class='workTask qatype'>
+    <div class='label'>qatype</div>
+    y:<input type="text" class='y'><br>
+    result:<input type="text" class='result' disabled>
+  </div>
+  <div class='workTask similarity'>
+    <div class='label'>similarity</div>
+    x:<input type="text" class='x'><br>
+    y:<input type="text" class='y'><br>
+    result:<input type="text" class='result' disabled>
+  </div>
+  <script src="./js/jquery-1.10.2.min.js"></script>
+  <script>
+    var toggle = true
+    var target = {
+      phatic:function(str) {
+        $.ajax({
+          url: 'Knowledge/phatic/' + str
+        }).done(res=> {
+          $('.workTask.phatic .result').val(res)
+        })
+      },
+      qatype:function(str) {
+        $.ajax({
+          url: 'Knowledge/qatype/' + str
+        }).done(res=> {
+          $('.workTask.qatype .result').val(res)
+        })
+      },
+      similarity:function(x,y) {
+        $.ajax({
+          url: 'Knowledge/similarity/' + x + '/' +y
+        }).done(res=> {
+          $('.workTask.similarity .result').val(res)
+        })
+      },
+    }
+    $('.workTask.phatic .x').on('blur', function() {
+      target.phatic($(this).val())
+    })
+    $('.workTask.qatype .y').on('blur', function() {
+      target.qatype($(this).val())
+    })
+    $('.workTask.similarity .x').on('blur', function() {
+      target.similarity($('.workTask.similarity .x').val(), $('.workTask.similarity .y').val())
+    })
+    $('.workTask.similarity .y').on('blur', function() {
+      target.similarity($('.workTask.similarity .x').val(), $('.workTask.similarity .y').val())
+    })
+  </script>
+</body>
+</html>

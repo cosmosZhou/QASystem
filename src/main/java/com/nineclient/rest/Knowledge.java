@@ -35,9 +35,11 @@ import com.util.Utility.Couplet;
 //http://localhost:8080/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有些什么业务/海南航空等
 //http://localhost:8080/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有什么业务/信诚人寿等
 //http://localhost:8080/QASystem/Knowledge/search/00000000000000000000000000000000/你们公司有些啥业务
+//http://121.43.150.14:9000/QASystem/Knowledge/main
+//http://121.43.150.14:9000/QASystem/Knowledge/phatic/你们公司有些什么业务
+//http://121.43.150.14:9000/QASystem/Knowledge/qatype/你们公司业务有哪些
 //http://121.43.150.14:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
-//http://121.40.130.192:8080/QASystem/Knowledge/methodName?parameterName0=aaa&parameterName1=bbb
-//http://121.40.130.192:8080/QASystem/Knowledge/methodName/aaa/bbb
+//http://121.43.150.14:9000/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有些什么业务/海南航空等
 //
 //tail -100f tomcat/logs/catalina.out 
 //sh tomcat/bin/startup.sh python3
@@ -53,6 +55,19 @@ import com.util.Utility.Couplet;
  */
 @Path("Knowledge")
 public class Knowledge {
+	public static Logger log = Logger.getLogger(Knowledge.class);
+	static {
+		if (SystemUtils.IS_OS_WINDOWS) {
+			Utility.workingDirectory = "D:/360/solution/";
+		} else {
+			Utility.workingDirectory = "/home/zhoulizhi/solution/";
+		}
+
+		log.info("workingDirectory = " + Utility.workingDirectory);
+		log.info("Knowledge is initialized successfully!");
+	}
+
+	
 	/**
 	 * search For Question By Keywords from the client perspective. by the use
 	 * lucene algorithm.
@@ -1282,18 +1297,6 @@ public class Knowledge {
 	@Produces(MediaType.TEXT_PLAIN)
 	public String updateQACoupletGET(@Context HttpServletRequest request) {
 		return this.updateQACoupletPOST(request);
-	}
-
-	public static Logger log = Logger.getLogger(Knowledge.class);
-	static {
-		if (SystemUtils.IS_OS_WINDOWS) {
-			Utility.workingDirectory = "D:/360/solution/";
-		} else {
-			Utility.workingDirectory = "/home/zhoulizhi/solution/";
-		}
-
-		log.info("workingDirectory = " + Utility.workingDirectory);
-		log.info("Knowledge is initialized successfully!");
 	}
 
 	@GET

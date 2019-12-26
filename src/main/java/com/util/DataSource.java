@@ -233,70 +233,22 @@ public class DataSource implements AutoCloseable {
 	}
 
 	/**
-	 * 初始化连接池
+	 * initialize pool
 	 * 
 	 * @param minimum
 	 * @param Maximum
 	 * @throws SQLException
 	 */
-	public DataSource(String url, String user, String password, Driver driver) {
-		int minimum = 10;
-		int maximum = 50;
-		// 连接池配置
-		HikariConfig config = new HikariConfig();
-		switch (driver) {
-		case mysql:
-			config.setDriverClassName("com.mysql.jdbc.Driver");
-			String value[] = { "user", "password", "true", "utf-8", "true", };
-			String key[] = { "user", "password", "useUnicode", "characterEncoding", "autoReconnect", };
-
-			value[0] = user;
-			value[1] = password;
-			for (int i = 0; i < value.length; ++i) {
-				url += '&' + key[i] + '=' + value[i];
-			}
-
-			config.setJdbcUrl(url);
-			log.info("url = " + url);
-			config.addDataSourceProperty("prepStmtCacheSqlLimit", 2048);
-			config.setConnectionTestQuery("SELECT 1");
-
-			break;
-		case oracle:
-			// config.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
-			// config.setDataSourceClassName("oracle.jdbc.pool.OracleDataSource");
-			config.setDriverClassName("oracle.jdbc.driver.OracleDriver");
-
-			OracleDataSource dataSource = null;
-			try {
-				dataSource = new OracleDataSource();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			log.info("url = " + url);
-			dataSource.setURL(url);
-			dataSource.setUser(user);
-			dataSource.setPassword(password);
-			config.setDataSource(dataSource);
-			// config.setConnectionTestQuery("SELECT 1");
-			break;
-		}
-
-		config.addDataSourceProperty("cachePrepStmts", true);
-		config.addDataSourceProperty("prepStmtCacheSize", 500);
-
-		config.setAutoCommit(true);
-		// 池中最小空闲链接数量
-		config.setMinimumIdle(minimum);
-		// 池中最大链接数量
-		config.setMaximumPoolSize(maximum);
-
-		ds = new HikariDataSource(config);
+	public DataSource(Driver driver, String url, String user, String password) {
+		this(driver, url, user, password, null, false, true, true);
 	}
 
-	public DataSource(String url, String user, String password, Driver driver, String serverTimezone) {
+	public DataSource(Driver driver, String url, String user, String password, String serverTimezone) {
+		this(driver, url, user, password, serverTimezone, true, true, true);
+	}
+
+	public DataSource(Driver driver, String url, String user, String password, String serverTimezone, boolean useSSL,
+			boolean useUnicode, boolean autoReconnect) {
 		int minimum = 10;
 		int maximum = 50;
 		// pool configuration
@@ -304,12 +256,16 @@ public class DataSource implements AutoCloseable {
 		switch (driver) {
 		case mysql:
 			config.setDriverClassName("com.mysql.jdbc.Driver");
-			String value[] = { user, password, "true", "utf-8", "true", serverTimezone};
-			String key[] = { "user", "password", "useUnicode", "characterEncoding", "autoReconnect", "serverTimezone"};
 
-			for (int i = 0; i < value.length; ++i) {
-				url += '&' + key[i] + '=' + value[i];
-			}
+			url += "user=" + user;
+			url += "&password=" + password;
+			url += "&characterEncoding=" + "utf-8";
+			if (serverTimezone != null)
+				url += "&serverTimezone=" + serverTimezone;
+
+			url += "&useSSL=" + useSSL;
+			url += "&useUnicode=" + useUnicode;
+			url += "&autoReconnect=" + autoReconnect;
 
 			config.setJdbcUrl(url);
 			log.info("url = " + url);
@@ -379,7 +335,7 @@ public class DataSource implements AutoCloseable {
 		String user = "root";
 		String password = "client1!";
 
-		DataSource ds = new DataSource(url, user, password, Driver.mysql);
+		DataSource ds = new DataSource(Driver.mysql, url, user, password);
 		Connection conn = ds.getConnection();
 
 		// ......
