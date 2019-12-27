@@ -30,29 +30,77 @@
     y:<input type="text" class='y'><br>
     result:<input type="text" class='result' disabled>
   </div>
+
+  <div class='workTask update'>
+    <div class='label'>update</div>
+    company:<input type="text" class='company'><br>
+    question:<input type="text" class='question'><br>
+    answer:<input type="text" class='answer'><br>
+    <button class='btn'>提交</button><br>
+    result:<input type="text" class='result' disabled>
+  </div>
+
+  <div class='workTask search'>
+    <div class='label'>search</div>
+    company:<input type="text" class='company'><br>
+    question:<input type="text" class='question'><br>
+    <button class='btn'>提交</button><br>
+    result: <div class='result'></div>
+  </div>
   <script src="./js/jquery-1.10.2.min.js"></script>
   <script>
     var toggle = true
     var target = {
       phatic:function(str) {
         $.ajax({
-          url: 'Knowledge/phatic/' + str
+          url: 'Knowledge/phatic/' + str,
+          type:'POST'
         }).done(res=> {
           $('.workTask.phatic .result').val(res)
         })
       },
       qatype:function(str) {
         $.ajax({
-          url: 'Knowledge/qatype/' + str
+          url: 'Knowledge/qatype/' + str,
+          type:'POST'
         }).done(res=> {
           $('.workTask.qatype .result').val(res)
         })
       },
       similarity:function(x,y) {
         $.ajax({
-          url: 'Knowledge/similarity/' + x + '/' +y
+          url: 'Knowledge/similarity/' + x + '/' +y,
+          type:'POST'
         }).done(res=> {
           $('.workTask.similarity .result').val(res)
+        })
+      },
+      update:function (company, question, answer) {
+        $('.workTask.update .result').val('')
+        $.ajax({
+          url: 'Knowledge/update/' + company + '/' + question + '/' + answer,
+          type:'POST'
+        }).done(res=> {
+          $('.workTask.update .result').val(res)
+        })
+      },
+      search:function (company, question) {
+        $('.workTask.search .result').html('')
+        $.ajax({
+          url: 'Knowledge/search/' + company + '/' + question,
+          dataType:'json',type:'POST'
+        }).done(res=> {
+          var html = ''
+          for (var i=0,len=res.length;i<len;i++) {
+            var item = res[i]
+            html += '<div>No:'+ (i+1) +'</div>'
+            html += '<div>answer:'+ (item.answer.sentence) +'</div>'
+            html += '<div>confidence:'+ (item.confidence) +'</div>'
+            html += '<div>faqid:'+ (item.faqid) +'</div>'
+            html += '<div>origin:'+ (item.origin) +'</div>'
+            html += '<div>respondent:'+ (item.respondent) +'</div>'
+          }
+          $('.workTask.search .result').html(html)
         })
       },
     }
@@ -67,6 +115,12 @@
     })
     $('.workTask.similarity .y').on('blur', function() {
       target.similarity($('.workTask.similarity .x').val(), $('.workTask.similarity .y').val())
+    })
+    $('.workTask.update .btn').on('click', function() {
+      target.update($('.workTask.update .company').val(), $('.workTask.update .question').val(), $('.workTask.update .answer').val())
+    })
+    $('.workTask.search .btn').on('click', function() {
+      target.search($('.workTask.search .company').val(), $('.workTask.search .question').val())
     })
   </script>
 </body>
