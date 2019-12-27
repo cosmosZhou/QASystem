@@ -41,7 +41,14 @@ import com.util.Utility.Couplet;
 //http://121.43.150.14:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
 //http://121.43.150.14:9000/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有些什么业务/海南航空等
 //http://121.43.150.14:9000/QASystem/Knowledge/search/00000000000000000000000000000000/你们公司有些啥业务
-//
+
+//http://192.168.3.133:9000/QASystem/Knowledge/main
+//http://192.168.3.133:9000/QASystem/Knowledge/phatic/你们公司有些什么业务
+//http://192.168.3.133:9000/QASystem/Knowledge/qatype/你们公司业务有哪些
+//http://192.168.3.133:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
+//http://192.168.3.133:9000/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有些什么业务/海南航空等
+//http://192.168.3.133:9000/QASystem/Knowledge/search/00000000000000000000000000000000/你们公司有些啥业务
+
 //tail -100f tomcat/logs/catalina.out 
 //sh tomcat/bin/startup.sh python3
 //solution/pytext/gunicorn.py --cpp=eigen
@@ -108,9 +115,11 @@ public class Knowledge {
 		return this.searchForQuestionByKeywordsPOST(request);
 	}
 
+	
 	@POST
-	@Path("/search")
-	@Produces(MediaType.TEXT_PLAIN)
+	@Path("search")
+	@Consumes("application/x-www-form-urlencoded")
+	@Produces("text/plain;charset=utf-8")
 	public String search(@Context HttpServletRequest request) {
 
 		// companyPk
@@ -119,11 +128,8 @@ public class Knowledge {
 		// question
 		String question = request.getParameter("question");
 
-		// List<String> companyList = new ArrayList<String>();
-		// companyList.add(companyPk);
 		String result = "";
 		try {
-			question = URLDecoder.decode(question, "UTF-8");
 			log.info("question = " + question + " with companyPk = " + companyPk);
 			return Utility.jsonify(QASystem.instance.getRepertoire(companyPk).search(question));
 		} catch (Exception e) {
