@@ -65,17 +65,16 @@ import com.util.Utility.Couplet;
 public class Knowledge {
 	public static Logger log = Logger.getLogger(Knowledge.class);
 	static {
-		if (SystemUtils.IS_OS_WINDOWS) {
-			Utility.workingDirectory = "D:/360/solution/";
-		} else {
-			Utility.workingDirectory = "/home/zhoulizhi/solution/";
+		log.info("Utility.class.getResource(\"\") = " + Utility.class.getResource("").getPath());
+		
+		if (SystemUtils.IS_OS_LINUX) {			
+			Utility.workingDirectory = Utility.class.getResource("").getPath();
 		}
 
 		log.info("workingDirectory = " + Utility.workingDirectory);
 		log.info("Knowledge is initialized successfully!");
 	}
 
-	
 	/**
 	 * search For Question By Keywords from the client perspective. by the use
 	 * lucene algorithm.
@@ -115,7 +114,6 @@ public class Knowledge {
 		return this.searchForQuestionByKeywordsPOST(request);
 	}
 
-	
 	@POST
 	@Path("search")
 	@Consumes("application/x-www-form-urlencoded")
@@ -142,7 +140,8 @@ public class Knowledge {
 	@GET
 	@Path("/search/{companyPk}/{question}")
 	@Produces("text/plain;charset=utf-8")
-	public String search(@PathParam("companyPk") String companyPk, @PathParam("question") String question) throws JsonProcessingException, Exception {
+	public String search(@PathParam("companyPk") String companyPk, @PathParam("question") String question)
+			throws JsonProcessingException, Exception {
 		return Utility.jsonify(QASystem.instance.getRepertoire(companyPk).search(question));
 	}
 

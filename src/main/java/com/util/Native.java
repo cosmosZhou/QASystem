@@ -35,6 +35,8 @@ public class Native {
 	public native static int sum8args(int rcx, int rdx, int r8, int r9, int fifthArg, int sixthArg, int seventhArg, int eighthArg);
 
 	public native static double relu(double rcx);
+	
+	public native static void initialize(String pwd);
 
 	static {
 		String LD_LIBRARY_PATH = System.getProperty("java.library.path");
@@ -44,6 +46,8 @@ public class Native {
 		try {
 
 			System.loadLibrary("eigen");
+			
+			Native.initialize(PropertyConfig.config.get("model", "pwd"));
 
 		} catch (Exception e) {
 			e.printStackTrace();

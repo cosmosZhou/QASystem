@@ -1,8 +1,8 @@
 package com.util;
 
-import java.util.List;
-import java.util.Map;
+import java.io.File;
 
+import org.apache.commons.lang.SystemUtils;
 import org.ini4j.ConfigParser;
 
 public class PropertyConfig {
@@ -10,19 +10,21 @@ public class PropertyConfig {
 	static {
 		try {
 			config = new ConfigParser();
-			config.read(Utility.workingDirectory + "config.ini");
-
-			List<Map.Entry<String, String>> items = config.items("mysql.connector");
-			for (Map.Entry<String, String> item : items) {
-				System.out.println(item.getKey() + " = " + item.getValue());
-			} // end for
-
+			String config_path;
+			if (SystemUtils.IS_OS_LINUX) {
+				config_path = new File(PropertyConfig.class.getResource("").getFile()).getParentFile().getParentFile()
+						.getParentFile().getParent() + "config.ini";
+			} else {				
+				config_path = "D:/360/solution/QASystem/config.ini";
+			}
+			System.out.println("config_path = " + config_path);
+			config.read(config_path);			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-
+	
 	public static void main(String[] args) {
 		System.out.println(config);
 	}
