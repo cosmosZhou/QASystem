@@ -2,7 +2,6 @@ package com.util;
 
 import java.io.File;
 
-import org.apache.commons.lang.SystemUtils;
 import org.ini4j.ConfigParser;
 
 public class PropertyConfig {

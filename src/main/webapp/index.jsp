@@ -43,7 +43,7 @@ input[type="file"] {
 		onclick="clear_cookie()">
 
 	<form name="paraphrase" method="post">
-		<input type="text" name="x" onblur="set_cookie(this)"> <input
+		<input type="text" name="x" onblur="set_cookie(this)"> / <input
 			type="text" name="y" onblur="set_cookie(this)">
 	</form>
 
