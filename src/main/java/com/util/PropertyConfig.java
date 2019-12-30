@@ -10,21 +10,16 @@ public class PropertyConfig {
 	static {
 		try {
 			config = new ConfigParser();
-			String config_path;
-			if (SystemUtils.IS_OS_LINUX) {
-				config_path = new File(PropertyConfig.class.getResource("").getFile()).getParentFile().getParentFile()
-						.getParentFile().getParent() + "config.ini";
-			} else {				
-				config_path = "D:/360/solution/QASystem/config.ini";
-			}
+			String config_path = new File(PropertyConfig.class.getResource("").getFile()).getParentFile().getParent()
+					+ "/config.ini";
+
 			System.out.println("config_path = " + config_path);
-			config.read(config_path);			
+			config.read(config_path);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	
 	public static void main(String[] args) {
 		System.out.println(config);
 	}

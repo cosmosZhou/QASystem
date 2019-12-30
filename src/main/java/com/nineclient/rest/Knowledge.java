@@ -15,6 +15,10 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
+import org.ini4j.ConfigParser.InterpolationException;
+import org.ini4j.ConfigParser.NoOptionException;
+import org.ini4j.ConfigParser.NoSectionException;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,6 +39,7 @@ import com.util.Utility.Couplet;
 //http://localhost:8080/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有些什么业务/海南航空等
 //http://localhost:8080/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有什么业务/信诚人寿等
 //http://localhost:8080/QASystem/Knowledge/search/00000000000000000000000000000000/你们公司有些啥业务
+
 //http://121.43.150.14:9000/QASystem/Knowledge/main
 //http://121.43.150.14:9000/QASystem/Knowledge/phatic/你们公司有些什么业务
 //http://121.43.150.14:9000/QASystem/Knowledge/qatype/你们公司业务有哪些
@@ -48,6 +53,13 @@ import com.util.Utility.Couplet;
 //http://192.168.3.133:9000/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
 //http://192.168.3.133:9000/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有些什么业务/海南航空等
 //http://192.168.3.133:9000/QASystem/Knowledge/search/00000000000000000000000000000000/你们公司有些啥业务
+
+//http://106.15.235.95:8080/QASystem/Knowledge/main
+//http://106.15.235.95:8080/QASystem/Knowledge/phatic/你们公司有些什么业务
+//http://106.15.235.95:8080/QASystem/Knowledge/qatype/你们公司业务有哪些
+//http://106.15.235.95:8080/QASystem/Knowledge/similarity/你们公司有些什么业务/你们公司业务有哪些
+//http://106.15.235.95:8080/QASystem/Knowledge/update/00000000000000000000000000000000/你们公司有些什么业务/海南航空等
+//http://106.15.235.95:8080/QASystem/Knowledge/search/00000000000000000000000000000000/你们公司有些啥业务
 
 //tail -100f tomcat/logs/catalina.out 
 //sh tomcat/bin/startup.sh python3
@@ -65,10 +77,11 @@ import com.util.Utility.Couplet;
 public class Knowledge {
 	public static Logger log = Logger.getLogger(Knowledge.class);
 	static {
-		log.info("Utility.class.getResource(\"\") = " + Utility.class.getResource("").getPath());
-		
-		if (SystemUtils.IS_OS_LINUX) {			
-			Utility.workingDirectory = Utility.class.getResource("").getPath();
+		try {
+			Utility.workingDirectory = PropertyConfig.config.get("model", "pwd");
+		} catch (NoSectionException | NoOptionException | InterpolationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		log.info("workingDirectory = " + Utility.workingDirectory);

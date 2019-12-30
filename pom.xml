@@ -47,7 +47,7 @@
 				<mysql.version>5.1.47</mysql.version>
 			</properties>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<activeByDefault>true</activeByDefault>
 			</activation>
 		</profile>
 		<profile>
@@ -56,7 +56,7 @@
 				<mysql.version>8.0.15</mysql.version>
 			</properties>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<activeByDefault>false</activeByDefault>
 			</activation>
 		</profile>
 	</profiles>
