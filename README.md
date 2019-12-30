@@ -12,6 +12,7 @@ sh tomcat/bin/start.sh
 vim tomcat/webapps/QASystem/WEB-INF/classes/config.ini
 
 [mysql]
+
 user=******
 
 password=******
