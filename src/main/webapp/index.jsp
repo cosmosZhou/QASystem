@@ -39,31 +39,56 @@ input[type="file"] {
 </style>
 
 <body>
-	<input type="button" name="clear_cookie" value='clear cookie'
-		onclick="clear_cookie()">
-
-	<form name="paraphrase" method="post">
-		<input type="text" name="x" onblur="set_cookie(this)"> / <input
-			type="text" name="y" onblur="set_cookie(this)">
-	</form>
+	<button onclick="clear_cookie()">delete cookie</button>
 
 	<%@ page import="com.util.Native"%>
 	<%
 		request.setCharacterEncoding("utf-8");
-
-		String x = request.getParameter("x");
-		String y = request.getParameter("y");
-		if (x != null && !x.isEmpty() && y != null && !y.isEmpty()) {
-			out.print("x = " + x);
-			out.print("<br>");
-			out.print("y = " + y);
-			out.print("<br>");
-			out.print("Native.similarity(x, y) = " + Native.similarity(x, y));
-			out.print("<br>");
-		}
-		//https://www.cnblogs.com/sunny-roman/p/11393413.html
-		//https://blog.csdn.net/brandyzhaowei/article/details/12750071
 	%>
+
+	<form name="paraphrase" method="post">
+		paraphrase:<br> <input type="text" id=paraphrase_x
+			name="paraphrase_x" onblur="set_cookie(this)"
+			onfocus="set_focus(this)"> / <input type="text"
+			id=paraphrase_y name="paraphrase_y" onblur="set_cookie(this)"
+			onfocus="set_focus(this)"> =
+		<nobr id=paraphrase_score>
+			<%
+				String x = request.getParameter("paraphrase_x");
+				String y = request.getParameter("paraphrase_y");
+				if (x != null && !x.isEmpty() && y != null && !y.isEmpty()) {
+					out.print(Native.similarity(x, y));
+				}
+			%>
+		</nobr>
+	</form>
+
+	<form name="phatic" method="post">
+		phatic:<br> <input type="text" id=phatic_text name="phatic_text"
+			onblur="set_cookie(this, 'paraphrase_score')" onfocus="set_focus(this)"> =
+		<%
+ 	{
+ 		String text = request.getParameter("phatic_text");
+ 		if (text != null && !text.isEmpty()) {
+ 			out.print(Native.phatic(text));
+ 		}
+ 	}
+ %>
+	</form>
+
+	<form name="qatype" method="post">
+		qatype:<br> <input type="text" id=qatype_text name="qatype_text"
+			onblur="set_cookie(this, 'paraphrase_score')" onfocus="set_focus(this)"> =
+		<%
+ 	{
+ 		String text = request.getParameter("qatype_text");
+ 		if (text != null && !text.isEmpty()) {
+ 			out.print(Native.qatype(text));
+ 		}
+ 	}
+ %>
+	</form>
+
 </body>
 
 <script>
@@ -77,13 +102,14 @@ input[type="file"] {
 			var pair = cookie[i].trim().split("=");
 			if (pair.length != 2)
 				continue;
-			
+
 			console.log(pair);
 			document.cookie = pair[0] + '=' + escape('null') + ';expires='
 					+ expires.toGMTString();
 		}
 
 		console.log("after clearing: " + document.cookie);
+		initialize();
 	}
 
 	function get_cookie(key) {
@@ -102,8 +128,23 @@ input[type="file"] {
 	}
 
 	function set_cookie(self) {
-		document.cookie = self.name + "=" + escape(self.value);
+		document.cookie = self.id + "=" + escape(self.value);
+		//		document.cookie = "paraphrase_score="
+		//				+ document.getElementById("paraphrase_score").value;
+		//		document.cookie = "phatic_score="
+		//				+ document.getElementById("phatic_score").value;
+		//		document.cookie = "qatype_score="
+		//				+ document.getElementById("qatype_score").value;
+		for (var i = 1; i < arguments.length; ++i){
+			var key = arguments[i];
+			console.log(key + "=" + document.getElementById(key).innerHTML);
+			document.cookie = key + "=" + escape(document.getElementById(key).innerHTML);
+		}
 		self.parentElement.submit();
+	}
+
+	function set_focus(self) {
+		document.cookie = "focus=" + self.id;
 	}
 
 	function del_cookie(key) {
@@ -118,9 +159,17 @@ input[type="file"] {
 		document.cookie = tmp_cookie;
 	}
 
-	document.paraphrase.x.value = get_cookie('x');
-	document.paraphrase.y.value = get_cookie('y');
+	function initialize() {
+		document.getElementById("paraphrase_x").value = get_cookie('paraphrase_x');
+		document.getElementById("paraphrase_y").value = get_cookie('paraphrase_y');
+		//		document.getElementById("paraphrase_score").value = get_cookie('paraphrase_score');
+		document.getElementById("phatic_text").value = get_cookie('phatic_text');
+		document.getElementById("qatype_text").value = get_cookie('qatype_text');
+		document.getElementById(get_cookie('focus')).focus();
+	}
+
+	initialize();
+	//https://www.cnblogs.com/sunny-roman/p/11393413.html
+	//https://blog.csdn.net/brandyzhaowei/article/details/12750071
 </script>
-
-
 </html>
