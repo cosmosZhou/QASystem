@@ -49,3 +49,7 @@ curl http://localhost:8080/QASystem/Knowledge/search/000000000000000000000000000
 and see the logging information:
 
 tail -100f tomcat/logs/catalina.out 
+
+the following is the main testing page:
+
+http://localhost:8080/QASystem
