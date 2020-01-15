@@ -48,9 +48,11 @@ input[type="file"] {
 
 	<form name="paraphrase" method="post">
 		paraphrase:<br> <input type="text" id=paraphrase_x
-			name="paraphrase_x" onblur="set_cookie(this)"
+			name="paraphrase_x"
+			onblur="set_cookie(this)"
 			onfocus="set_focus(this)"> / <input type="text"
-			id=paraphrase_y name="paraphrase_y" onblur="set_cookie(this)"
+			id=paraphrase_y name="paraphrase_y"
+			onblur="set_cookie(this)"
 			onfocus="set_focus(this)"> =
 		<nobr id=paraphrase_score>
 			<%
@@ -61,34 +63,56 @@ input[type="file"] {
 				}
 			%>
 		</nobr>
+
 	</form>
 
 	<form name="phatic" method="post">
 		phatic:<br> <input type="text" id=phatic_text name="phatic_text"
-			onblur="set_cookie(this, 'paraphrase_score')" onfocus="set_focus(this)"> =
-		<%
- 	{
- 		String text = request.getParameter("phatic_text");
- 		if (text != null && !text.isEmpty()) {
- 			out.print(Native.phatic(text));
- 		}
- 	}
- %>
+			onblur="set_cookie(this)"
+			onfocus="set_focus(this)"> =
+		<nobr id=phatic_score>
+			<%
+				{
+					String text = request.getParameter("phatic_text");
+					if (text != null && !text.isEmpty()) {
+						out.print(Native.phatic(text));
+					}
+				}
+			%>
+		</nobr>
+
 	</form>
 
 	<form name="qatype" method="post">
 		qatype:<br> <input type="text" id=qatype_text name="qatype_text"
-			onblur="set_cookie(this, 'paraphrase_score')" onfocus="set_focus(this)"> =
-		<%
- 	{
- 		String text = request.getParameter("qatype_text");
- 		if (text != null && !text.isEmpty()) {
- 			out.print(Native.qatype(text));
- 		}
- 	}
- %>
+			onblur="set_cookie(this)"
+			onfocus="set_focus(this)"> =
+		<nobr id=qatype_score>
+			<%
+				{
+					String text = request.getParameter("qatype_text");
+					if (text != null && !text.isEmpty()) {
+						out.print(Native.qatype(text));
+					}
+				}
+			%>
+		</nobr>
 	</form>
-
+	<form name="update" method="post">
+		update:<br> <input type="text" id=update_question name="update_question"
+			onblur="set_cookie(this)"
+			onfocus="set_focus(this)"> =
+		<nobr id=update_result>
+			<%
+				{
+					String text = request.getParameter("qatype_text");
+					if (text != null && !text.isEmpty()) {
+						out.print(Native.qatype(text));
+					}
+				}
+			%>
+		</nobr>
+	</form>
 </body>
 
 <script>
@@ -109,36 +133,29 @@ input[type="file"] {
 		}
 
 		console.log("after clearing: " + document.cookie);
-		initialize();
 	}
 
-	function get_cookie(key) {
+	function get_cookie() {
 		console.log(document.cookie);
 		var cookie = document.cookie.split(";");
 		//		console.log(cookie);
+		var dict = {};
 		for (var i = 0; i < cookie.length; ++i) {
 			var pair = cookie[i].trim().split("=");
 			if (pair.length != 2)
 				continue;
 			console.log(pair);
-			if (key == pair[0])
-				return unescape(pair[1]);
+			dict[pair[0]] = unescape(pair[1]);
 		}
-		return '';
+		return dict;
 	}
 
 	function set_cookie(self) {
 		document.cookie = self.id + "=" + escape(self.value);
-		//		document.cookie = "paraphrase_score="
-		//				+ document.getElementById("paraphrase_score").value;
-		//		document.cookie = "phatic_score="
-		//				+ document.getElementById("phatic_score").value;
-		//		document.cookie = "qatype_score="
-		//				+ document.getElementById("qatype_score").value;
-		for (var i = 1; i < arguments.length; ++i){
-			var key = arguments[i];
-			console.log(key + "=" + document.getElementById(key).innerHTML);
-			document.cookie = key + "=" + escape(document.getElementById(key).innerHTML);
+		for (var element of document.querySelectorAll("nobr[id]")){
+			var key = element.id;			
+			console.log(key + "=" + element.innerHTML);
+			document.cookie = key + "=" + escape(element.innerHTML);
 		}
 		self.parentElement.submit();
 	}
@@ -147,25 +164,26 @@ input[type="file"] {
 		document.cookie = "focus=" + self.id;
 	}
 
-	function del_cookie(key) {
-		var tmp_cookie = '';
-		var cookie = document.cookie.split(";");
-		for (var i = 0; i < cookie.length; i++) {
-			var pair = cookie[i].split("=");
-			if (key != pair[0]) {
-				tmp_cookie += cookie[i] + ';';
-			}
-		}
-		document.cookie = tmp_cookie;
-	}
-
 	function initialize() {
-		document.getElementById("paraphrase_x").value = get_cookie('paraphrase_x');
-		document.getElementById("paraphrase_y").value = get_cookie('paraphrase_y');
-		//		document.getElementById("paraphrase_score").value = get_cookie('paraphrase_score');
-		document.getElementById("phatic_text").value = get_cookie('phatic_text');
-		document.getElementById("qatype_text").value = get_cookie('qatype_text');
-		document.getElementById(get_cookie('focus')).focus();
+		var cookie = get_cookie();
+		console.log("cookie = ");
+		console.log(cookie);
+		
+		document.getElementById("paraphrase_x").value = cookie.paraphrase_x;
+		document.getElementById("paraphrase_y").value = cookie.paraphrase_y;
+		document.getElementById("phatic_text").value = cookie.phatic_text;
+		document.getElementById("qatype_text").value = cookie.qatype_text;
+
+		if (!document.getElementById("paraphrase_score").innerHTML.trim()) {
+			document.getElementById("paraphrase_score").innerHTML = cookie.paraphrase_score;
+		}
+		if (!document.getElementById("phatic_score").innerHTML.trim()) {
+			document.getElementById("phatic_score").innerHTML = cookie.phatic_score;
+		}
+		if (!document.getElementById("qatype_score").innerHTML.trim()) {
+			document.getElementById("qatype_score").innerHTML = cookie.qatype_score;
+		}
+		document.getElementById(cookie.focus).focus();
 	}
 
 	initialize();

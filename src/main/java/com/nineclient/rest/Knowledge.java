@@ -32,6 +32,7 @@ import com.util.Utility;
 import com.util.Utility.Couplet;
 
 //121.43.150.14  root   clienT1!2019  ssh:22
+//http://localhost:8080/QASystem
 //http://localhost:8080/QASystem/Knowledge/main
 //http://localhost:8080/QASystem/Knowledge/phatic/你们公司有些什么业务
 //http://localhost:8080/QASystem/Knowledge/qatype/你们公司业务有哪些
