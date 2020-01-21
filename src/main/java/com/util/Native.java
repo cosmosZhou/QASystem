@@ -1,5 +1,9 @@
 package com.util;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
 public class Native {
 	public native static void displayHelloWorld();
 
@@ -13,7 +17,7 @@ public class Native {
 	public native static int gcdinttemplate(int ecx, int edx);
 
 	public native static long gcdlongtemplate(long ecx, long edx);
-	
+
 	public native static int main();
 
 	public native static int service(String text);
@@ -25,18 +29,25 @@ public class Native {
 	public native static double[][][] NER(String service, String text, int[] repertoire);
 
 	public native static double qatype(String text);
-	
+
 	public native static double phatic(String text);
-	
+
 	public native static double similarity(String x, String y);
 
 	public native static double[] batch_similarity(String[] x, String[] y);
 
-	public native static int sum8args(int rcx, int rdx, int r8, int r9, int fifthArg, int sixthArg, int seventhArg, int eighthArg);
+	public native static int sum8args(int rcx, int rdx, int r8, int r9, int fifthArg, int sixthArg, int seventhArg,
+			int eighthArg);
 
 	public native static double relu(double rcx);
-	
+
 	public native static void initializeH5Model(String pwd);
+
+	public native static void initializeAhocorasickDictionary(String pwd);
+
+	public native static Object[] parseText(String text);
+
+	public native static void parseTextVoid(String text, Object[] result);
 
 	static {
 		String LD_LIBRARY_PATH = System.getProperty("java.library.path");
@@ -50,7 +61,20 @@ public class Native {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+
+		initializeAhocorasickDictionary("../corpus/ahocorasick/en/dictionary.txt");
+
+		String text = new Utility.Text("../corpus/ahocorasick/en/text.txt").fetchContent();
+		Object[] result = parseText(text);
+		int[] begin = (int[]) result[0];
+		int[] end = (int[]) result[1];
+		String[] value = (String[]) result[2];
+
+		for (int i = 0; i < begin.length; ++i) {
+			System.out.println(text.substring(begin[i], end[i]) + " = " + value[i]);
+		}
+
 		String input = "导航到播放下一站下一站传奇城乘风破浪";
 		System.out.println("reverse what the user typed: \n" + input);
 		String _input = Native.reverse(input);
