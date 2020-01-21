@@ -80,6 +80,7 @@ public class Knowledge {
 	static {
 		try {
 			Utility.workingDirectory = PropertyConfig.config.get("model", "pwd");
+			Native.initializeH5Model(PropertyConfig.config.get("model", "pwd"));
 		} catch (NoSectionException | NoOptionException | InterpolationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

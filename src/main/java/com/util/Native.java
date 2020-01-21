@@ -36,7 +36,7 @@ public class Native {
 
 	public native static double relu(double rcx);
 	
-	public native static void initialize(String pwd);
+	public native static void initializeH5Model(String pwd);
 
 	static {
 		String LD_LIBRARY_PATH = System.getProperty("java.library.path");
@@ -44,11 +44,7 @@ public class Native {
 		System.out.println("java.library.path = " + LD_LIBRARY_PATH);
 
 		try {
-
 			System.loadLibrary("eigen");
-			
-			Native.initialize(PropertyConfig.config.get("model", "pwd"));
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
