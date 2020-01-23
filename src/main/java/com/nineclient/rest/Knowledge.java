@@ -63,8 +63,8 @@ import com.util.Utility.Couplet;
 //http://106.15.235.95:8080/QASystem/Knowledge/search/00000000000000000000000000000000/你们公司有些啥业务
 
 //tail -100f tomcat/logs/catalina.out 
-//sh tomcat/bin/startup.sh python3
-//solution/pytext/gunicorn.py --cpp=eigen
+//sh tomcat/bin/startup.sh
+//compile -Pprod install -Pprod
 //
 
 /**
