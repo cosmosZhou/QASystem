@@ -26,10 +26,10 @@
 		<welcome-file>index.html</welcome-file>
 		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
-	
+
 	<servlet-mapping>
 		<servlet-name>resteasy-servlet</servlet-name>
 		<url-pattern>/Knowledge/*</url-pattern>
 	</servlet-mapping>
-	
+
 </web-app>

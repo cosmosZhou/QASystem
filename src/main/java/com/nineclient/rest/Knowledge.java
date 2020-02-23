@@ -3,6 +3,7 @@ package com.nineclient.rest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -13,7 +14,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.ini4j.ConfigParser.InterpolationException;
 import org.ini4j.ConfigParser.NoOptionException;
@@ -22,10 +22,9 @@ import org.ini4j.ConfigParser.NoSectionException;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.robot.Repertoire;
 import com.robot.QACouplet;
-
 import com.robot.QASystem;
+import com.robot.Repertoire;
 import com.util.Native;
 import com.util.PropertyConfig;
 import com.util.Utility;
