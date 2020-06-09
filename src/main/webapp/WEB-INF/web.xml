@@ -22,6 +22,12 @@
 		<servlet-name>resteasy-servlet</servlet-name>
 		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>HelloServlet</servlet-name>
+		<display-name>HelloServlet</display-name>
+		<description></description>
+		<servlet-class>com.nlp.HelloServlet</servlet-class>
+	</servlet>
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 		<welcome-file>index.jsp</welcome-file>
@@ -30,6 +36,10 @@
 	<servlet-mapping>
 		<servlet-name>resteasy-servlet</servlet-name>
 		<url-pattern>/Knowledge/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>HelloServlet</servlet-name>
+		<url-pattern>/HelloServlet</url-pattern>
 	</servlet-mapping>
 
 </web-app>

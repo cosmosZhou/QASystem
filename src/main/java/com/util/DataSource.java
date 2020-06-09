@@ -274,8 +274,6 @@ public class DataSource implements AutoCloseable {
 
 			break;
 		case oracle:
-			// config.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
-			// config.setDataSourceClassName("oracle.jdbc.pool.OracleDataSource");
 			config.setDriverClassName("oracle.jdbc.driver.OracleDriver");
 
 			OracleDataSource dataSource = null;
